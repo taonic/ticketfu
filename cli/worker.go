@@ -11,15 +11,14 @@ import (
 	"go.uber.org/fx"
 )
 
+const (
+	// Worker-specific flags
+	FlagWorkerQueue   = "queue"
+	FlagWorkerThreads = "threads"
+)
+
 // Worker-specific flags
 var workerFlags = append([]cli.Flag{
-	&cli.StringFlag{
-		Name:     FlagConfig,
-		Aliases:  []string{"c"},
-		EnvVars:  []string{"CONFIG_PATH"},
-		Usage:    "path to worker config file",
-		Required: false,
-	},
 	&cli.StringFlag{
 		Name:    FlagWorkerQueue,
 		EnvVars: []string{"WORKER_QUEUE"},

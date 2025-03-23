@@ -9,31 +9,44 @@ import (
 )
 
 type Server struct {
-	config config.ServerConfig
+	config     config.ServerConfig
+	httpServer *HTTPServer
 }
 
-func NewServer(config config.ServerConfig) *Server {
+func NewServer(config config.ServerConfig, httpServer *HTTPServer) *Server {
 	return &Server{
-		config: config,
+		config:     config,
+		httpServer: httpServer,
 	}
 }
 
 // Start initializes and starts the server
 func (s *Server) Start(ctx context.Context) error {
 	fmt.Println("Starting server with config:", s.config)
-	// Actual server implementation goes here
+
+	// Start the HTTP server
+	if err := s.httpServer.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start HTTP server: %w", err)
+	}
+
 	return nil
 }
 
 // Stop gracefully shuts down the server
 func (s *Server) Stop(ctx context.Context) error {
 	fmt.Println("Stopping server...")
-	// Graceful shutdown implementation goes here
+
+	// Stop the HTTP server
+	if err := s.httpServer.Stop(ctx); err != nil {
+		return fmt.Errorf("failed to stop HTTP server: %w", err)
+	}
+
 	return nil
 }
 
-// Module registers lifecycle hooks with fx
+// Module registers server components with fx
 var Module = fx.Options(
+	fx.Provide(NewHTTPServer),
 	fx.Provide(NewServer),
 	fx.Invoke(func(lc fx.Lifecycle, server *Server) {
 		lc.Append(fx.Hook{

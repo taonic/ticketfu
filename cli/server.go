@@ -11,15 +11,15 @@ import (
 	"go.uber.org/fx"
 )
 
+const (
+	// Server-specific flags
+	FlagServerHost = "host"
+	FlagServerPort = "port"
+	FlagAPIKey     = "api-key"
+)
+
 // Server-specific flags
 var serverFlags = append([]cli.Flag{
-	&cli.StringFlag{
-		Name:     FlagConfig,
-		Aliases:  []string{"c"},
-		EnvVars:  []string{"CONFIG_PATH"},
-		Usage:    "path to server config file",
-		Required: false,
-	},
 	&cli.StringFlag{
 		Name:    FlagServerHost,
 		EnvVars: []string{"SERVER_HOST"},
@@ -31,6 +31,13 @@ var serverFlags = append([]cli.Flag{
 		EnvVars: []string{"SERVER_PORT"},
 		Usage:   "server port",
 		Value:   8080,
+	},
+	&cli.StringFlag{
+		Name:     FlagAPIKey,
+		Aliases:  []string{"k"},
+		EnvVars:  []string{"API_KEY"},
+		Usage:    "API key for authenticating requests",
+		Required: true,
 	},
 }, commonFlags...)
 
@@ -72,9 +79,10 @@ func startServer(c *cli.Context) error {
 // NewServerConfig creates a ServerConfig from CLI context
 func NewServerConfig(ctx *cli.Context) (config.ServerConfig, error) {
 	// Otherwise, build config from CLI flags
-	// This is just a simple example - extend as needed
 	return config.ServerConfig{
-		Host: ctx.String(FlagServerHost),
+		Host:   ctx.String(FlagServerHost),
+		Port:   ctx.Int(FlagServerPort),
+		APIKey: ctx.String(FlagAPIKey),
 	}, nil
 }
 

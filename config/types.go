@@ -22,7 +22,9 @@ type (
 
 	ServerConfig struct {
 		ClientOptions
-		Host string
+		Host   string
+		Port   int
+		APIKey string // API key for authenticating requests
 	}
 
 	WorkerConfig struct {
