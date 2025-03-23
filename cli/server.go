@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/taonic/ticketiq/config"
-	"github.com/taonic/ticketiq/server"
+	"github.com/taonic/ticketfu/config"
+	"github.com/taonic/ticketfu/server"
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/log"
 	"go.uber.org/fx"

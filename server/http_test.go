@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taonic/ticketiq/config"
+	"github.com/taonic/ticketfu/config"
 )
 
 func TestHTTPServer_RegisterRoutes(t *testing.T) {

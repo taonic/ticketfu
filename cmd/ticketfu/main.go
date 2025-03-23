@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/taonic/ticketiq/cli"
+	"github.com/taonic/ticketfu/cli"
 )
 
 func main() {

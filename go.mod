@@ -1,4 +1,4 @@
-module github.com/taonic/ticketiq
+module github.com/taonic/ticketfu
 
 go 1.23.2
 

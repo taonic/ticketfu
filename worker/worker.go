@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/taonic/ticketiq/config"
+	"github.com/taonic/ticketfu/config"
 	"go.uber.org/fx"
 )
 

@@ -17,7 +17,7 @@ func Run(args []string) error {
 // newCliApp creates a new CLI app with all commands registered
 func newCliApp() *cli.App {
 	app := cli.NewApp()
-	app.Name = "ticketiq"
+	app.Name = "ticketfu"
 	app.Version = Version
 	app.Commands = []*cli.Command{
 		NewWorkerCommand(),

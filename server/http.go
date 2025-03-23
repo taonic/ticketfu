@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/taonic/ticketiq/config"
+	"github.com/taonic/ticketfu/config"
 )
 
 // HTTPServer encapsulates the HTTP server functionality
