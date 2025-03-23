@@ -7,17 +7,19 @@ import (
 	"time"
 
 	"github.com/taonic/ticketfu/config"
+	"go.temporal.io/sdk/client"
 )
 
 // HTTPServer encapsulates the HTTP server functionality
 type HTTPServer struct {
-	server *http.Server
-	mux    *http.ServeMux
-	config config.ServerConfig
+	server         *http.Server
+	mux            *http.ServeMux
+	config         config.ServerConfig
+	temporalClient client.Client
 }
 
 // NewHTTPServer creates a new HTTP server with configured mux router
-func NewHTTPServer(config config.ServerConfig) *HTTPServer {
+func NewHTTPServer(config config.ServerConfig, temporalClient client.Client) *HTTPServer {
 	mux := http.NewServeMux()
 
 	// Create the server with the mux as the handler
@@ -30,9 +32,10 @@ func NewHTTPServer(config config.ServerConfig) *HTTPServer {
 	}
 
 	return &HTTPServer{
-		server: server,
-		mux:    mux,
-		config: config,
+		server:         server,
+		mux:            mux,
+		config:         config,
+		temporalClient: temporalClient,
 	}
 }
 
@@ -57,6 +60,11 @@ func (h *HTTPServer) Stop(ctx context.Context) error {
 	// Create a deadline for shutdown
 	shutdownCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
+
+	// Close the Temporal client
+	if h.temporalClient != nil {
+		h.temporalClient.Close()
+	}
 
 	// Attempt graceful shutdown
 	if err := h.server.Shutdown(shutdownCtx); err != nil {

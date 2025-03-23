@@ -19,7 +19,7 @@ const (
 )
 
 // Server-specific flags
-var serverFlags = append([]cli.Flag{
+var serverFlags = append(append([]cli.Flag{
 	&cli.StringFlag{
 		Name:    FlagServerHost,
 		EnvVars: []string{"SERVER_HOST"},
@@ -39,7 +39,7 @@ var serverFlags = append([]cli.Flag{
 		Usage:    "API key for authenticating requests",
 		Required: true,
 	},
-}, commonFlags...)
+}, temporalFlags...), commonFlags...)
 
 // NewServerCommand creates a new server command with subcommands
 func NewServerCommand() *cli.Command {
@@ -78,11 +78,19 @@ func startServer(c *cli.Context) error {
 
 // NewServerConfig creates a ServerConfig from CLI context
 func NewServerConfig(ctx *cli.Context) (config.ServerConfig, error) {
-	// Otherwise, build config from CLI flags
+	// Build config from CLI flags
 	return config.ServerConfig{
 		Host:   ctx.String(FlagServerHost),
 		Port:   ctx.Int(FlagServerPort),
 		APIKey: ctx.String(FlagAPIKey),
+		Temporal: config.TemporalClientConfig{
+			Address:     ctx.String(FlagTemporalAddress),
+			Namespace:   ctx.String(FlagTemporalNamespace),
+			APIKey:      ctx.String(FlagTemporalAPIKey),
+			TLSCertPath: ctx.String(FlagTemporalTLSCert),
+			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
+			UseSSL:      ctx.Bool(FlagTemporalUseSSL),
+		},
 	}, nil
 }
 

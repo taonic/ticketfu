@@ -9,7 +9,19 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/taonic/ticketfu/config"
+	"go.temporal.io/sdk/client"
 )
+
+// MockTemporalClient is a mock of Temporal Client interface
+type MockTemporalClient struct {
+	client.Client
+	CloseCalled bool
+}
+
+// Close implements client.Client interface
+func (m *MockTemporalClient) Close() {
+	m.CloseCalled = true
+}
 
 func TestHTTPServer_RegisterRoutes(t *testing.T) {
 	// Create a test config
@@ -17,10 +29,17 @@ func TestHTTPServer_RegisterRoutes(t *testing.T) {
 		Host:   "localhost",
 		Port:   8080,
 		APIKey: "test-api-key",
+		Temporal: config.TemporalClientConfig{
+			Address:   "localhost:7233",
+			Namespace: "test-namespace",
+		},
 	}
 
+	// Create a mock temporal client
+	mockClient := &MockTemporalClient{}
+
 	// Create a new HTTP server
-	server := NewHTTPServer(cfg)
+	server := NewHTTPServer(cfg, mockClient)
 
 	// Register routes
 	server.registerRoutes()
@@ -40,10 +59,17 @@ func TestHTTPServer_StartStop(t *testing.T) {
 		Host:   "localhost",
 		Port:   0, // Use port 0 to get a random available port
 		APIKey: "test-api-key",
+		Temporal: config.TemporalClientConfig{
+			Address:   "localhost:7233",
+			Namespace: "test-namespace",
+		},
 	}
 
+	// Create a mock temporal client
+	mockClient := &MockTemporalClient{}
+
 	// Create a new HTTP server
-	server := NewHTTPServer(cfg)
+	server := NewHTTPServer(cfg, mockClient)
 	server.server.Addr = "localhost:0" // Ensure using a random available port
 
 	// Create a context
@@ -59,6 +85,9 @@ func TestHTTPServer_StartStop(t *testing.T) {
 	// Stop the server
 	err = server.Stop(ctx)
 	assert.NoError(t, err)
+
+	// Verify that the Temporal client's Close method was called
+	assert.True(t, mockClient.CloseCalled, "Temporal client Close() should have been called")
 }
 
 func TestHTTPServer_HealthEndpoint(t *testing.T) {
@@ -67,10 +96,17 @@ func TestHTTPServer_HealthEndpoint(t *testing.T) {
 		Host:   "localhost",
 		Port:   8080,
 		APIKey: "test-api-key",
+		Temporal: config.TemporalClientConfig{
+			Address:   "localhost:7233",
+			Namespace: "test-namespace",
+		},
 	}
 
+	// Create a mock temporal client
+	mockClient := &MockTemporalClient{}
+
 	// Create a new HTTP server
-	server := NewHTTPServer(cfg)
+	server := NewHTTPServer(cfg, mockClient)
 	server.registerRoutes()
 
 	// Create a test request for the health endpoint
@@ -91,10 +127,17 @@ func TestHTTPServer_APIEndpoints(t *testing.T) {
 		Host:   "localhost",
 		Port:   8080,
 		APIKey: "test-api-key",
+		Temporal: config.TemporalClientConfig{
+			Address:   "localhost:7233",
+			Namespace: "test-namespace",
+		},
 	}
 
+	// Create a mock temporal client
+	mockClient := &MockTemporalClient{}
+
 	// Create a new HTTP server
-	server := NewHTTPServer(cfg)
+	server := NewHTTPServer(cfg, mockClient)
 	server.registerRoutes()
 
 	// Test cases for each API endpoint

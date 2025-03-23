@@ -5,18 +5,21 @@ import (
 	"fmt"
 
 	"github.com/taonic/ticketfu/config"
+	"go.temporal.io/sdk/client"
 	"go.uber.org/fx"
 )
 
 type Server struct {
-	config     config.ServerConfig
-	httpServer *HTTPServer
+	config         config.ServerConfig
+	httpServer     *HTTPServer
+	temporalClient client.Client
 }
 
-func NewServer(config config.ServerConfig, httpServer *HTTPServer) *Server {
+func NewServer(config config.ServerConfig, httpServer *HTTPServer, temporalClient client.Client) *Server {
 	return &Server{
-		config:     config,
-		httpServer: httpServer,
+		config:         config,
+		httpServer:     httpServer,
+		temporalClient: temporalClient,
 	}
 }
 
@@ -46,6 +49,7 @@ func (s *Server) Stop(ctx context.Context) error {
 
 // Module registers server components with fx
 var Module = fx.Options(
+	fx.Provide(NewTemporalClient),
 	fx.Provide(NewHTTPServer),
 	fx.Provide(NewServer),
 	fx.Invoke(func(lc fx.Lifecycle, server *Server) {

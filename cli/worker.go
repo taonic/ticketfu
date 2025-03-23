@@ -15,10 +15,11 @@ const (
 	// Worker-specific flags
 	FlagWorkerQueue   = "queue"
 	FlagWorkerThreads = "threads"
+	// Temporal flags are defined in server.go
 )
 
 // Worker-specific flags
-var workerFlags = append([]cli.Flag{
+var workerFlags = append(append([]cli.Flag{
 	&cli.StringFlag{
 		Name:    FlagWorkerQueue,
 		EnvVars: []string{"WORKER_QUEUE"},
@@ -31,7 +32,7 @@ var workerFlags = append([]cli.Flag{
 		Usage:   "number of worker threads",
 		Value:   4,
 	},
-}, commonFlags...)
+}, temporalFlags...), commonFlags...)
 
 // NewWorkerCommand creates a new worker command with subcommands
 func NewWorkerCommand() *cli.Command {
@@ -70,11 +71,18 @@ func startWorker(c *cli.Context) error {
 
 // NewWorkerConfig creates a WorkerConfig from CLI context
 func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
-	// Otherwise, build config from CLI flags
-	// This is just a simple example - extend as needed
+	// Build config from CLI flags
 	return config.WorkerConfig{
 		QueueName: ctx.String(FlagWorkerQueue),
 		Threads:   ctx.Int(FlagWorkerThreads),
+		Temporal: config.TemporalClientConfig{
+			Address:     ctx.String(FlagTemporalAddress),
+			Namespace:   ctx.String(FlagTemporalNamespace),
+			APIKey:      ctx.String(FlagTemporalAPIKey),
+			TLSCertPath: ctx.String(FlagTemporalTLSCert),
+			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
+			UseSSL:      ctx.Bool(FlagTemporalUseSSL),
+		},
 	}, nil
 }
 
