@@ -128,13 +128,6 @@ func (h *HTTPServer) handleGetTicket(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(`{"id":"%s","status":"open"}`, id)))
 }
 
-func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement updating a ticket
-	id := r.PathValue("id")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf(`{"id":"%s","status":"updated"}`, id)))
-}
-
 func (h *HTTPServer) handleGetOrganization(w http.ResponseWriter, r *http.Request) {
 	// TODO: Implement get organization
 	w.WriteHeader(http.StatusNoContent)
