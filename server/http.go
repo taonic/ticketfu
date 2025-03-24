@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -78,16 +79,46 @@ func (h *HTTPServer) Stop(ctx context.Context) error {
 // registerRoutes sets up all the HTTP routes for the server
 func (h *HTTPServer) registerRoutes() {
 	// Health check endpoint
-	h.mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
+	h.mux.HandleFunc("GET /health", h.handleHealthCheck)
 
 	// API routes
 	verifyAPIKey := APIKeyMiddleware(h.config.APIKey)
 	h.mux.HandleFunc("GET  /api/v1/ticket/summary", verifyAPIKey(h.handleGetTicket))
 	h.mux.HandleFunc("POST /api/v1/ticket", verifyAPIKey(h.handleUpdateTicket))
 	h.mux.HandleFunc("GET /api/v1/organization/summary", verifyAPIKey(h.handleGetOrganization))
+}
+
+func (h *HTTPServer) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	response := HealthResponse{
+		Status:     "OK",
+		TemporalOK: true,
+	}
+
+	// Check Temporal service health
+	if h.temporalClient != nil {
+		if _, err := h.temporalClient.CheckHealth(ctx, nil); err != nil {
+			response.Status = "Degraded"
+			response.TemporalOK = false
+			response.TemporalMsg = err.Error()
+		}
+	} else {
+		response.Status = "Degraded"
+		response.TemporalOK = false
+		response.TemporalMsg = "Temporal client not initialized"
+	}
+
+	// Return JSON response
+	w.Header().Set("Content-Type", "application/json")
+	if response.Status != "OK" {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *HTTPServer) handleGetTicket(w http.ResponseWriter, r *http.Request) {

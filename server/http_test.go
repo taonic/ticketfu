@@ -2,29 +2,20 @@ package server
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/taonic/ticketfu/config"
-	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/mocks"
 )
 
-// MockTemporalClient is a mock of Temporal Client interface
-type MockTemporalClient struct {
-	client.Client
-	CloseCalled bool
-}
-
-// Close implements client.Client interface
-func (m *MockTemporalClient) Close() {
-	m.CloseCalled = true
-}
-
 func TestHTTPServer_RegisterRoutes(t *testing.T) {
-	// Create a test config
 	cfg := config.ServerConfig{
 		Host:   "localhost",
 		Port:   8080,
@@ -35,63 +26,20 @@ func TestHTTPServer_RegisterRoutes(t *testing.T) {
 		},
 	}
 
-	// Create a mock temporal client
-	mockClient := &MockTemporalClient{}
+	mockClient := &mocks.Client{}
+	mockClient.On("CheckHealth", mock.Anything, mock.Anything).Return(nil, nil)
 
-	// Create a new HTTP server
 	server := NewHTTPServer(cfg, mockClient)
-
-	// Register routes
 	server.registerRoutes()
 
-	// Test the health check endpoint
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
 	server.mux.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "OK", w.Body.String())
-}
-
-func TestHTTPServer_StartStop(t *testing.T) {
-	// Create a test config with a random available port
-	cfg := config.ServerConfig{
-		Host:   "localhost",
-		Port:   0, // Use port 0 to get a random available port
-		APIKey: "test-api-key",
-		Temporal: config.TemporalClientConfig{
-			Address:   "localhost:7233",
-			Namespace: "test-namespace",
-		},
-	}
-
-	// Create a mock temporal client
-	mockClient := &MockTemporalClient{}
-
-	// Create a new HTTP server
-	server := NewHTTPServer(cfg, mockClient)
-	server.server.Addr = "localhost:0" // Ensure using a random available port
-
-	// Create a context
-	ctx := context.Background()
-
-	// Start the server
-	err := server.Start(ctx)
-	assert.NoError(t, err)
-
-	// Give the server a moment to start
-	time.Sleep(100 * time.Millisecond)
-
-	// Stop the server
-	err = server.Stop(ctx)
-	assert.NoError(t, err)
-
-	// Verify that the Temporal client's Close method was called
-	assert.True(t, mockClient.CloseCalled, "Temporal client Close() should have been called")
 }
 
 func TestHTTPServer_HealthEndpoint(t *testing.T) {
-	// Create a test config
 	cfg := config.ServerConfig{
 		Host:   "localhost",
 		Port:   8080,
@@ -102,27 +50,87 @@ func TestHTTPServer_HealthEndpoint(t *testing.T) {
 		},
 	}
 
-	// Create a mock temporal client
-	mockClient := &MockTemporalClient{}
+	testCases := []struct {
+		name           string
+		checkHealthErr error
+		expectedStatus int
+		expectedOK     bool
+	}{
+		{
+			name:           "Temporal service healthy",
+			checkHealthErr: nil,
+			expectedStatus: http.StatusOK,
+			expectedOK:     true,
+		},
+		{
+			name:           "Temporal service unhealthy",
+			checkHealthErr: errors.New("temporal service unavailable"),
+			expectedStatus: http.StatusServiceUnavailable,
+			expectedOK:     false,
+		},
+	}
 
-	// Create a new HTTP server
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockClient := &mocks.Client{}
+			mockClient.On("CheckHealth", mock.Anything, mock.Anything).Return(nil, tc.checkHealthErr)
+
+			server := NewHTTPServer(cfg, mockClient)
+			server.registerRoutes()
+
+			req := httptest.NewRequest("GET", "/health", nil)
+			w := httptest.NewRecorder()
+			server.mux.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+			var response HealthResponse
+			err := json.NewDecoder(w.Body).Decode(&response)
+			assert.NoError(t, err)
+
+			assert.Equal(t, tc.expectedOK, response.TemporalOK)
+			if tc.checkHealthErr != nil {
+				assert.Equal(t, tc.checkHealthErr.Error(), response.TemporalMsg)
+				assert.Equal(t, "Degraded", response.Status)
+			} else {
+				assert.Equal(t, "OK", response.Status)
+				assert.Empty(t, response.TemporalMsg)
+			}
+			mockClient.AssertExpectations(t)
+		})
+	}
+}
+
+func TestHTTPServer_StartStop(t *testing.T) {
+	cfg := config.ServerConfig{
+		Host:   "localhost",
+		Port:   0,
+		APIKey: "test-api-key",
+		Temporal: config.TemporalClientConfig{
+			Address:   "localhost:7233",
+			Namespace: "test-namespace",
+		},
+	}
+
+	mockClient := &mocks.Client{}
+	mockClient.On("Close").Return()
+
 	server := NewHTTPServer(cfg, mockClient)
-	server.registerRoutes()
+	server.server.Addr = "localhost:0"
 
-	// Create a test request for the health endpoint
-	req := httptest.NewRequest("GET", "/health", nil)
-	w := httptest.NewRecorder()
+	ctx := context.Background()
 
-	// Serve the request
-	server.mux.ServeHTTP(w, req)
+	err := server.Start(ctx)
+	assert.NoError(t, err)
 
-	// Check the response
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "OK", w.Body.String())
+	time.Sleep(100 * time.Millisecond)
+
+	err = server.Stop(ctx)
+	assert.NoError(t, err)
+
+	mockClient.AssertExpectations(t)
 }
 
 func TestHTTPServer_APIEndpoints(t *testing.T) {
-	// Create a test config
 	cfg := config.ServerConfig{
 		Host:   "localhost",
 		Port:   8080,
@@ -133,14 +141,11 @@ func TestHTTPServer_APIEndpoints(t *testing.T) {
 		},
 	}
 
-	// Create a mock temporal client
-	mockClient := &MockTemporalClient{}
+	mockClient := &mocks.Client{}
 
-	// Create a new HTTP server
 	server := NewHTTPServer(cfg, mockClient)
 	server.registerRoutes()
 
-	// Test cases for each API endpoint
 	testCases := []struct {
 		name           string
 		method         string
@@ -193,17 +198,14 @@ func TestHTTPServer_APIEndpoints(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Create a test request
 			req := httptest.NewRequest(tc.method, tc.path, nil)
 			if tc.apiKey != "" {
 				req.Header.Set(APIKeyHeader, tc.apiKey)
 			}
 			w := httptest.NewRecorder()
 
-			// Serve the request
 			server.mux.ServeHTTP(w, req)
 
-			// Check the response
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
 		})
