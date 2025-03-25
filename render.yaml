@@ -1,0 +1,21 @@
+# Exported from Render on 2025-03-25T07:08:04Z
+services:
+- type: web
+  name: ticketfu
+  runtime: go
+  repo: https://github.com/taonic/ticketfu
+  plan: free
+  envVars:
+  - key: TEMPORAL_NAMESPACE
+    sync: false
+  - key: TEMPORAL_ADDRESS
+    sync: false
+  - key: TEMPORAL_API_KEY
+    sync: false
+  - key: API_KEY
+    sync: false
+  region: oregon
+  buildCommand: go build -ldflags '-s -w' -o ticketfu cmd/ticketfu/main.go
+  startCommand: ./ticketfu server start
+  healthCheckPath: /health
+version: "1"
