@@ -14,6 +14,11 @@ const (
 	FlagTemporalAPIKey    = "temporal-api-key"
 	FlagTemporalTLSCert   = "temporal-tls-cert"
 	FlagTemporalTLSKey    = "temporal-tls-key"
+
+	// Zendesk-specific flags
+	FlagZendeskSubdomain = "zendesk-subdomain"
+	FlagZendeskEmail     = "zendesk-email"
+	FlagZendeskToken     = "zendesk-token"
 )
 
 // Temporal flags shared across commands
@@ -44,6 +49,28 @@ var temporalFlags = []cli.Flag{
 		Name:    FlagTemporalTLSKey,
 		EnvVars: []string{"TEMPORAL_TLS_KEY"},
 		Usage:   "Path to Temporal TLS key file",
+	},
+}
+
+// Zendesk flags shared across commands
+var zendeskFlags = []cli.Flag{
+	&cli.StringFlag{
+		Name:     FlagZendeskSubdomain,
+		EnvVars:  []string{"ZENDESK_SUBDOMAIN"},
+		Usage:    "Zendesk subdomain",
+		Required: true,
+	},
+	&cli.StringFlag{
+		Name:     FlagZendeskEmail,
+		EnvVars:  []string{"ZENDESK_EMAIL"},
+		Usage:    "Zendesk email",
+		Required: true,
+	},
+	&cli.StringFlag{
+		Name:     FlagZendeskToken,
+		EnvVars:  []string{"ZENDESK_TOKEN"},
+		Usage:    "Zendesk API token",
+		Required: true,
 	},
 }
 

@@ -26,9 +26,12 @@ type summarizeTicketWorkflow struct {
 	workflow.Context
 	input                      SummarizeTicketInput
 	signalCh                   workflow.ReceiveChannel
-	legacySignalCh             workflow.ReceiveChannel
 	updatesBeforeContinueAsNew int
 	activityOptions            workflow.ActivityOptions
+
+	// Ticket state
+	compressedComments []byte
+	nextComment        string
 }
 
 func newTicketSummarizer(ctx workflow.Context, input SummarizeTicketInput) *summarizeTicketWorkflow {

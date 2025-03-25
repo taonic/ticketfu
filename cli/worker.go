@@ -15,11 +15,10 @@ const (
 	// Worker-specific flags
 	FlagWorkerQueue   = "queue"
 	FlagWorkerThreads = "threads"
-	// Temporal flags are defined in server.go
 )
 
 // Worker-specific flags
-var workerFlags = append(append([]cli.Flag{
+var workerFlags = append(append(append([]cli.Flag{
 	&cli.StringFlag{
 		Name:    FlagWorkerQueue,
 		EnvVars: []string{"WORKER_QUEUE"},
@@ -32,7 +31,7 @@ var workerFlags = append(append([]cli.Flag{
 		Usage:   "number of worker threads",
 		Value:   4,
 	},
-}, temporalFlags...), commonFlags...)
+}, temporalFlags...), commonFlags...), zendeskFlags...)
 
 // NewWorkerCommand creates a new worker command with subcommands
 func NewWorkerCommand() *cli.Command {
@@ -82,6 +81,9 @@ func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
 			TLSCertPath: ctx.String(FlagTemporalTLSCert),
 			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
 		},
+		ZendeskSubdomain: ctx.String(FlagZendeskSubdomain),
+		ZendeskEmail:     ctx.String(FlagZendeskEmail),
+		ZendeskToken:     ctx.String(FlagZendeskToken),
 	}, nil
 }
 

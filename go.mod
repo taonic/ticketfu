@@ -5,8 +5,10 @@ go 1.23.2
 toolchain go1.23.7
 
 require (
-	github.com/urfave/cli v1.22.16
+	github.com/nukosuke/go-zendesk v0.18.0
+	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
+	go.temporal.io/sdk v1.32.1
 	go.temporal.io/server v1.27.1
 	go.uber.org/fx v1.23.0
 )
@@ -17,6 +19,7 @@ require (
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
@@ -26,10 +29,8 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.temporal.io/api v1.44.1 // indirect
-	go.temporal.io/sdk v1.32.1 // indirect
 	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/mock v0.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

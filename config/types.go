@@ -20,5 +20,9 @@ type (
 		Temporal  TemporalClientConfig
 		QueueName string
 		Threads   int
+
+		ZendeskSubdomain string
+		ZendeskEmail     string
+		ZendeskToken     string
 	}
 )

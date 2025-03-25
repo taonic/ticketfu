@@ -4,23 +4,27 @@ import (
 	"context"
 	"fmt"
 
+	gozendesk "github.com/nukosuke/go-zendesk/zendesk"
 	"github.com/taonic/ticketfu/config"
+	"github.com/taonic/ticketfu/zendesk"
 	"go.uber.org/fx"
 )
 
 type Worker struct {
-	config config.WorkerConfig
+	config  config.WorkerConfig
+	zClient *gozendesk.Client
 }
 
-func NewWorker(config config.WorkerConfig) *Worker {
+func NewWorker(config config.WorkerConfig, zClient *gozendesk.Client) *Worker {
 	return &Worker{
-		config: config,
+		config:  config,
+		zClient: zClient,
 	}
 }
 
 // Start initializes and starts the worker
 func (w *Worker) Start(ctx context.Context) error {
-	fmt.Println("Starting worker with config:", w.config)
+	fmt.Println("Starting worker")
 	// Actual worker implementation goes here
 	return nil
 }
@@ -35,6 +39,7 @@ func (w *Worker) Stop(ctx context.Context) error {
 // Module registers the worker with fx
 var Module = fx.Options(
 	fx.Provide(NewWorker),
+	fx.Provide(zendesk.NewClient),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {
 		lc.Append(fx.Hook{
 			OnStart: worker.Start,
