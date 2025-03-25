@@ -6,6 +6,7 @@ toolchain go1.23.7
 
 require (
 	github.com/nukosuke/go-zendesk v0.18.0
+	github.com/sashabaranov/go-openai v1.38.1
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
 	go.temporal.io/sdk v1.32.1

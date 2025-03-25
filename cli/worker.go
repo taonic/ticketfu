@@ -18,7 +18,7 @@ const (
 )
 
 // Worker-specific flags
-var workerFlags = append(append(append([]cli.Flag{
+var workerFlags = append(append(append(append([]cli.Flag{
 	&cli.StringFlag{
 		Name:    FlagWorkerQueue,
 		EnvVars: []string{"WORKER_QUEUE"},
@@ -31,7 +31,7 @@ var workerFlags = append(append(append([]cli.Flag{
 		Usage:   "number of worker threads",
 		Value:   4,
 	},
-}, temporalFlags...), commonFlags...), zendeskFlags...)
+}, temporalFlags...), commonFlags...), zendeskFlags...), openaiFlags...)
 
 // NewWorkerCommand creates a new worker command with subcommands
 func NewWorkerCommand() *cli.Command {
@@ -84,6 +84,7 @@ func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
 		ZendeskSubdomain: ctx.String(FlagZendeskSubdomain),
 		ZendeskEmail:     ctx.String(FlagZendeskEmail),
 		ZendeskToken:     ctx.String(FlagZendeskToken),
+		OpenAIAPIKey:     ctx.String(FlagOpenAIAPIKey),
 	}, nil
 }
 

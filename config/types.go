@@ -24,5 +24,7 @@ type (
 		ZendeskSubdomain string
 		ZendeskEmail     string
 		ZendeskToken     string
+
+		OpenAIAPIKey string
 	}
 )

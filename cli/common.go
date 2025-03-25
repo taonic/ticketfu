@@ -19,6 +19,9 @@ const (
 	FlagZendeskSubdomain = "zendesk-subdomain"
 	FlagZendeskEmail     = "zendesk-email"
 	FlagZendeskToken     = "zendesk-token"
+
+	// OpenAI-specific flags
+	FlagOpenAIAPIKey = "openai-api-key"
 )
 
 // Temporal flags shared across commands
@@ -70,6 +73,16 @@ var zendeskFlags = []cli.Flag{
 		Name:     FlagZendeskToken,
 		EnvVars:  []string{"ZENDESK_TOKEN"},
 		Usage:    "Zendesk API token",
+		Required: true,
+	},
+}
+
+// OpenAI flags shared across commands
+var openaiFlags = []cli.Flag{
+	&cli.StringFlag{
+		Name:     FlagOpenAIAPIKey,
+		EnvVars:  []string{"OPENAI_API_KEY"},
+		Usage:    "OpenAI API Key",
 		Required: true,
 	},
 }
