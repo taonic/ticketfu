@@ -3,6 +3,10 @@
 [![Go Tests](https://github.com/taonic/ticketfu/workflows/Go%20Tests/badge.svg)](https://github.com/taonic/ticketfu/actions)
 [![codecov](https://codecov.io/gh/taonic/ticketfu/branch/main/graph/badge.svg)](https://codecov.io/gh/taonic/ticketfu)
 
+Deploy TicketFu with one click on Render.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/taonic/ticketfu)
+
 ## Features
 
 - RESTful API for ticket management
