@@ -6,6 +6,8 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"os/user"
 
 	"github.com/taonic/ticketfu/config"
 	"go.temporal.io/sdk/client"
@@ -13,13 +15,13 @@ import (
 
 // headerProvider implements the HeadersProvider interface required by Temporal
 type headerProvider struct {
-	apiKey string
+	namespace string
 }
 
 // GetHeaders implements the HeadersProvider interface
 func (h *headerProvider) GetHeaders(ctx context.Context) (map[string]string, error) {
 	return map[string]string{
-		"Authorization": fmt.Sprintf("Bearer %s", h.apiKey),
+		"temporal-namespace": h.namespace,
 	}, nil
 }
 
@@ -28,10 +30,11 @@ func NewClient(config config.TemporalClientConfig) (client.Client, error) {
 	options := client.Options{
 		HostPort:  config.Address,
 		Namespace: config.Namespace,
+		Identity:  clientIdentity(),
 	}
 
-	// Configure TLS if enabled
-	if config.UseSSL {
+	// Configure TLS or API key
+	if config.TLSCertPath != "" && config.TLSKeyPath != "" {
 		tlsConfig, err := createTLSConfig(
 			config.TLSCertPath,
 			config.TLSKeyPath,
@@ -42,20 +45,34 @@ func NewClient(config config.TemporalClientConfig) (client.Client, error) {
 		options.ConnectionOptions = client.ConnectionOptions{
 			TLS: tlsConfig,
 		}
-	}
-
-	// Add API key if provided
-	if config.APIKey != "" {
-		options.HeadersProvider = &headerProvider{apiKey: config.APIKey}
+	} else {
+		if len(config.APIKey) == 0 {
+			return nil, fmt.Errorf("API key is required if no TLS is configured")
+		}
+		options.Credentials = client.NewAPIKeyStaticCredentials(config.APIKey)
+		options.HeadersProvider = &headerProvider{namespace: config.Namespace}
+		options.ConnectionOptions.TLS = &tls.Config{}
 	}
 
 	// Create Temporal client
-	c, err := client.NewClient(options)
+	c, err := client.Dial(options)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Temporal client: %w", err)
 	}
 
 	return c, nil
+}
+
+func clientIdentity() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "unknown-host"
+	}
+	username := "unknown-user"
+	if u, err := user.Current(); err == nil {
+		username = u.Username
+	}
+	return "ticketfu:" + username + "@" + hostname
 }
 
 // createTLSConfig creates a TLS configuration for secure connections

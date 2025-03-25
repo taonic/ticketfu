@@ -25,7 +25,7 @@ func NewServer(config config.ServerConfig, httpServer *HTTPServer, temporalClien
 
 // Start initializes and starts the server
 func (s *Server) Start(ctx context.Context) error {
-	fmt.Println("Starting server with config:", s.config)
+	fmt.Println("Starting server")
 
 	// Start the HTTP server
 	if err := s.httpServer.Start(ctx); err != nil {

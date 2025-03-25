@@ -14,7 +14,6 @@ const (
 	FlagTemporalAPIKey    = "temporal-api-key"
 	FlagTemporalTLSCert   = "temporal-tls-cert"
 	FlagTemporalTLSKey    = "temporal-tls-key"
-	FlagTemporalUseSSL    = "temporal-use-ssl"
 )
 
 // Temporal flags shared across commands
@@ -45,12 +44,6 @@ var temporalFlags = []cli.Flag{
 		Name:    FlagTemporalTLSKey,
 		EnvVars: []string{"TEMPORAL_TLS_KEY"},
 		Usage:   "Path to Temporal TLS key file",
-	},
-	&cli.BoolFlag{
-		Name:    FlagTemporalUseSSL,
-		EnvVars: []string{"TEMPORAL_USE_SSL"},
-		Usage:   "Whether to use SSL/TLS for Temporal connection",
-		Value:   false,
 	},
 }
 

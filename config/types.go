@@ -7,7 +7,6 @@ type (
 		APIKey      string // Temporal API key (if using secured service)
 		TLSCertPath string // Path to TLS cert file
 		TLSKeyPath  string // Path to TLS key file
-		UseSSL      bool   // Whether to use SSL/TLS for connection
 	}
 
 	ServerConfig struct {

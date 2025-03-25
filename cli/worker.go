@@ -81,7 +81,6 @@ func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
 			APIKey:      ctx.String(FlagTemporalAPIKey),
 			TLSCertPath: ctx.String(FlagTemporalTLSCert),
 			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
-			UseSSL:      ctx.Bool(FlagTemporalUseSSL),
 		},
 	}, nil
 }

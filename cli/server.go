@@ -89,7 +89,6 @@ func NewServerConfig(ctx *cli.Context) (config.ServerConfig, error) {
 			APIKey:      ctx.String(FlagTemporalAPIKey),
 			TLSCertPath: ctx.String(FlagTemporalTLSCert),
 			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
-			UseSSL:      ctx.Bool(FlagTemporalUseSSL),
 		},
 	}, nil
 }
