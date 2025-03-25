@@ -22,13 +22,13 @@ const (
 var serverFlags = append(append([]cli.Flag{
 	&cli.StringFlag{
 		Name:    FlagServerHost,
-		EnvVars: []string{"SERVER_HOST"},
+		EnvVars: []string{"HOST"},
 		Usage:   "server host address",
-		Value:   "localhost",
+		Value:   "0.0.0.0",
 	},
 	&cli.IntFlag{
 		Name:    FlagServerPort,
-		EnvVars: []string{"SERVER_PORT"},
+		EnvVars: []string{"PORT"},
 		Usage:   "server port",
 		Value:   8080,
 	},
