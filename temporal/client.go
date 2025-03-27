@@ -33,6 +33,8 @@ func NewClient(config config.TemporalClientConfig) (client.Client, error) {
 		Identity:  clientIdentity(),
 	}
 
+	fmt.Println("Temporal client is connecting:", config.Address)
+
 	// Configure TLS or API key
 	if config.TLSCertPath != "" && config.TLSKeyPath != "" {
 		tlsConfig, err := createTLSConfig(
@@ -45,10 +47,7 @@ func NewClient(config config.TemporalClientConfig) (client.Client, error) {
 		options.ConnectionOptions = client.ConnectionOptions{
 			TLS: tlsConfig,
 		}
-	} else {
-		if len(config.APIKey) == 0 {
-			return nil, fmt.Errorf("API key is required if no TLS is configured")
-		}
+	} else if len(config.APIKey) != 0 {
 		options.Credentials = client.NewAPIKeyStaticCredentials(config.APIKey)
 		options.HeadersProvider = &headerProvider{namespace: config.Namespace}
 		options.ConnectionOptions.TLS = &tls.Config{}

@@ -3,39 +3,33 @@ package workflows
 import (
 	"time"
 
+	"github.com/taonic/ticketfu/temporal/activities"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
-// SummarizeTicketInput is the input for the summarize ticket workflow
-type SummarizeTicketInput struct {
-	TicketID       string
-	Summary        string
-	OrganizationID string
-	RequesterID    string
-	RequesterEmail string
-	// Sha is used to decide when to generate new summary
-	Sha string
+// UpsertTicketInput is the input for the summarize ticket workflow
+type UpsertTicketInput struct {
+	TicketID string
 }
 
-type SummarizeTicketOutput struct {
+type UpdateTicketOutput struct {
 	Summary string
 }
 
-type summarizeTicketWorkflow struct {
+type ticketWorkflow struct {
 	workflow.Context
-	input                      SummarizeTicketInput
+	input                      UpsertTicketInput
 	signalCh                   workflow.ReceiveChannel
 	updatesBeforeContinueAsNew int
 	activityOptions            workflow.ActivityOptions
 
 	// Ticket state
-	compressedComments []byte
-	nextComment        string
+	ticket Ticket
 }
 
-func newTicketSummarizer(ctx workflow.Context, input SummarizeTicketInput) *summarizeTicketWorkflow {
-	return &summarizeTicketWorkflow{
+func newTicketWorkflow(ctx workflow.Context, input UpsertTicketInput) *ticketWorkflow {
+	return &ticketWorkflow{
 		Context: workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 			StartToCloseTimeout: 30 * time.Second,
 			RetryPolicy: &temporal.RetryPolicy{
@@ -45,22 +39,23 @@ func newTicketSummarizer(ctx workflow.Context, input SummarizeTicketInput) *summ
 				MaximumAttempts:    10,
 			},
 		}),
-		input:    input,
-		signalCh: workflow.GetSignalChannel(ctx, UpdateTicketSummarySignal),
-		// We'll allow 500 updates before we continue-as-new the workflow. This is
-		// required because the history will grow very large otherwise for an
-		// interminable workflow fielding signal requests and executing activities.
+		input:                      input,
+		signalCh:                   workflow.GetSignalChannel(ctx, UpdateTicketSummarySignal),
 		updatesBeforeContinueAsNew: 500,
 	}
 }
 
 // Define the workflow
-func SummarizeTicketWorkflow(ctx workflow.Context, input SummarizeTicketInput) error {
-	s := newTicketSummarizer(ctx, input)
+func TicketWorkflow(ctx workflow.Context, input UpsertTicketInput) error {
+	s := newTicketWorkflow(ctx, input)
 	return s.run()
 }
 
-func (s *summarizeTicketWorkflow) run() error {
+func (s *ticketWorkflow) run() error {
+	a := activities.Activity{}
+	workflow.ExecuteActivity(s.Context, a.FetchTicket, s.input.TicketID).Get(s.Context, nil)
+	return nil
+
 	//a := activities.Activity{}
 	//selector := workflow.NewSelector(s)
 	//var wErr error
@@ -150,5 +145,5 @@ func (s *summarizeTicketWorkflow) run() error {
 	//// nothing pending. Note, if there is request signals come in faster than they
 	//// are handled or pending, there will not be a moment where the selector has
 	//// nothing pending which means this will run forever.
-	return workflow.NewContinueAsNewError(s, SummarizeTicketWorkflow, s.input)
+	//return workflow.NewContinueAsNewError(s, TicketWorkflow, s.input)
 }

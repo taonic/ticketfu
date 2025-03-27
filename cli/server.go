@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/taonic/ticketfu/config"
 	"github.com/taonic/ticketfu/server"
@@ -76,23 +75,6 @@ func startServer(c *cli.Context) error {
 	return nil
 }
 
-// NewServerConfig creates a ServerConfig from CLI context
-func NewServerConfig(ctx *cli.Context) (config.ServerConfig, error) {
-	// Build config from CLI flags
-	return config.ServerConfig{
-		Host:   ctx.String(FlagServerHost),
-		Port:   ctx.Int(FlagServerPort),
-		APIKey: ctx.String(FlagAPIKey),
-		Temporal: config.TemporalClientConfig{
-			Address:     ctx.String(FlagTemporalAddress),
-			Namespace:   ctx.String(FlagTemporalNamespace),
-			APIKey:      ctx.String(FlagTemporalAPIKey),
-			TLSCertPath: ctx.String(FlagTemporalTLSCert),
-			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
-		},
-	}, nil
-}
-
 // NewServerApp creates an fx application for the server command
 func NewServerApp(ctx *cli.Context) (*fx.App, error) {
 	var logCfg log.Config
@@ -100,22 +82,28 @@ func NewServerApp(ctx *cli.Context) (*fx.App, error) {
 		logCfg.Level = logLevel
 	}
 
-	// Create server config from CLI context
-	serverConfig, err := NewServerConfig(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create server config: %w", err)
+	serverConfig := config.ServerConfig{
+		Host:   ctx.String(FlagServerHost),
+		Port:   ctx.Int(FlagServerPort),
+		APIKey: ctx.String(FlagAPIKey),
+	}
+
+	temporalClientConfig := config.TemporalClientConfig{
+		Address:     ctx.String(FlagTemporalAddress),
+		Namespace:   ctx.String(FlagTemporalNamespace),
+		APIKey:      ctx.String(FlagTemporalAPIKey),
+		TLSCertPath: ctx.String(FlagTemporalTLSCert),
+		TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
 	}
 
 	app := fx.New(
-		// Provide logger
 		fx.Provide(func() log.Logger {
 			return log.NewZapLogger(log.BuildZapLogger(logCfg))
 		}),
-
-		// Provide the server config directly
-		fx.Supply(serverConfig),
-
-		// Include modules
+		fx.Supply(
+			serverConfig,
+			temporalClientConfig,
+		),
 		server.Module,
 	)
 

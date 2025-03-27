@@ -74,13 +74,6 @@ func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
 	return config.WorkerConfig{
 		QueueName: ctx.String(FlagWorkerQueue),
 		Threads:   ctx.Int(FlagWorkerThreads),
-		Temporal: config.TemporalClientConfig{
-			Address:     ctx.String(FlagTemporalAddress),
-			Namespace:   ctx.String(FlagTemporalNamespace),
-			APIKey:      ctx.String(FlagTemporalAPIKey),
-			TLSCertPath: ctx.String(FlagTemporalTLSCert),
-			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
-		},
 	}, nil
 }
 
@@ -106,12 +99,21 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 		OpenAIAPIKey: ctx.String(FlagOpenAIAPIKey),
 	}
 
+	temporalClientConfig := config.TemporalClientConfig{
+		Address:     ctx.String(FlagTemporalAddress),
+		Namespace:   ctx.String(FlagTemporalNamespace),
+		APIKey:      ctx.String(FlagTemporalAPIKey),
+		TLSCertPath: ctx.String(FlagTemporalTLSCert),
+		TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
+	}
+
 	app := fx.New(
 		fx.Provide(func() log.Logger {
 			return log.NewZapLogger(log.BuildZapLogger(logCfg))
 		}),
 		fx.Supply(
 			workerConfig,
+			temporalClientConfig,
 			zendeskConfig,
 			openAIConfig,
 		),

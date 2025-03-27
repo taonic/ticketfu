@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/taonic/ticketfu/config"
+	"github.com/taonic/ticketfu/temporal"
 	"github.com/taonic/ticketfu/temporal/workflows"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/mocks"
@@ -44,14 +45,11 @@ func TestHandleUpdateTicket(t *testing.T) {
 					workflows.UpdateTicketSummarySignal,
 					mock.Anything,
 					mock.MatchedBy(func(options client.StartWorkflowOptions) bool {
-						return options.ID == workflowID && options.TaskQueue == workflows.TaskQueue
+						return options.ID == workflowID && options.TaskQueue == temporal.TaskQueue
 					}),
-					mock.AnythingOfType("func(internal.Context, workflows.SummarizeTicketInput) error"),
-					mock.MatchedBy(func(input workflows.SummarizeTicketInput) bool {
-						return input.TicketID == "12345" &&
-							input.OrganizationID == "org123" &&
-							input.RequesterID == "user123" &&
-							input.RequesterEmail == "user@example.com"
+					mock.AnythingOfType("func(internal.Context, workflows.UpsertTicketInput) error"),
+					mock.MatchedBy(func(input workflows.UpsertTicketInput) bool {
+						return input.TicketID == "12345"
 					}),
 				).Return(mockRun, nil)
 			},

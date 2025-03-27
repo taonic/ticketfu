@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/taonic/ticketfu/config"
+	"github.com/taonic/ticketfu/temporal"
 	"go.temporal.io/sdk/client"
 	"go.uber.org/fx"
 )
@@ -49,7 +50,7 @@ func (s *Server) Stop(ctx context.Context) error {
 
 // Module registers server components with fx
 var Module = fx.Options(
-	fx.Provide(NewTemporalClient),
+	fx.Provide(temporal.NewClient),
 	fx.Provide(NewHTTPServer),
 	fx.Provide(NewServer),
 	fx.Invoke(func(lc fx.Lifecycle, server *Server) {

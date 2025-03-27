@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/taonic/ticketfu/temporal"
 	"github.com/taonic/ticketfu/temporal/workflows"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
@@ -37,11 +38,8 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 	workflowID := fmt.Sprintf(workflows.TicketWorkflowIDTemplate, ticketID)
 
 	// Create workflow input with SummarizeTicketInput struct
-	input := workflows.SummarizeTicketInput{
-		TicketID:       ticketID,
-		OrganizationID: req.OrganizationID,
-		RequesterID:    req.RequesterID,
-		RequesterEmail: req.RequesterEmail,
+	input := workflows.UpsertTicketInput{
+		TicketID: ticketID,
 	}
 
 	// Create context with timeout
@@ -51,7 +49,7 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 	// Start or signal the workflow
 	workflowOptions := client.StartWorkflowOptions{
 		ID:        workflowID,
-		TaskQueue: workflows.TaskQueue,
+		TaskQueue: temporal.TaskQueue,
 	}
 
 	wr, err := h.temporalClient.SignalWithStartWorkflow(
@@ -60,7 +58,7 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 		workflows.UpdateTicketSummarySignal,
 		nil,
 		workflowOptions,
-		workflows.SummarizeTicketWorkflow,
+		workflows.TicketWorkflow,
 		input,
 	)
 
