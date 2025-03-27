@@ -81,10 +81,6 @@ func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
 			TLSCertPath: ctx.String(FlagTemporalTLSCert),
 			TLSKeyPath:  ctx.String(FlagTemporalTLSKey),
 		},
-		ZendeskSubdomain: ctx.String(FlagZendeskSubdomain),
-		ZendeskEmail:     ctx.String(FlagZendeskEmail),
-		ZendeskToken:     ctx.String(FlagZendeskToken),
-		OpenAIAPIKey:     ctx.String(FlagOpenAIAPIKey),
 	}, nil
 }
 
@@ -95,22 +91,30 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 		logCfg.Level = logLevel
 	}
 
-	// Create worker config from CLI context
 	workerConfig, err := NewWorkerConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create worker config: %w", err)
 	}
 
+	zendeskConfig := config.ZendeskConfig{
+		ZendeskSubdomain: ctx.String(FlagZendeskSubdomain),
+		ZendeskEmail:     ctx.String(FlagZendeskEmail),
+		ZendeskToken:     ctx.String(FlagZendeskToken),
+	}
+
+	openAIConfig := config.OpenAIConfig{
+		OpenAIAPIKey: ctx.String(FlagOpenAIAPIKey),
+	}
+
 	app := fx.New(
-		// Provide logger
 		fx.Provide(func() log.Logger {
 			return log.NewZapLogger(log.BuildZapLogger(logCfg))
 		}),
-
-		// Provide the worker config directly
-		fx.Supply(workerConfig),
-
-		// Include modules
+		fx.Supply(
+			workerConfig,
+			zendeskConfig,
+			openAIConfig,
+		),
 		worker.Module,
 	)
 

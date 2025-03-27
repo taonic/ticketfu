@@ -5,6 +5,6 @@ import (
 	"github.com/taonic/ticketfu/config"
 )
 
-func NewClient(config config.WorkerConfig) *openai.Client {
+func NewClient(config config.OpenAIConfig) *openai.Client {
 	return openai.NewClient(config.OpenAIAPIKey)
 }

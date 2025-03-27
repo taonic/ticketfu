@@ -9,6 +9,16 @@ type (
 		TLSKeyPath  string // Path to TLS key file
 	}
 
+	ZendeskConfig struct {
+		ZendeskSubdomain string
+		ZendeskEmail     string
+		ZendeskToken     string
+	}
+
+	OpenAIConfig struct {
+		OpenAIAPIKey string
+	}
+
 	ServerConfig struct {
 		Temporal TemporalClientConfig
 		Host     string
@@ -18,13 +28,9 @@ type (
 
 	WorkerConfig struct {
 		Temporal  TemporalClientConfig
+		Zendesk   ZendeskConfig
+		OpenAI    OpenAIConfig
 		QueueName string
 		Threads   int
-
-		ZendeskSubdomain string
-		ZendeskEmail     string
-		ZendeskToken     string
-
-		OpenAIAPIKey string
 	}
 )

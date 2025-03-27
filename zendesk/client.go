@@ -8,7 +8,7 @@ import (
 	"github.com/nukosuke/go-zendesk/zendesk"
 )
 
-func NewClient(config config.WorkerConfig) (*zendesk.Client, error) {
+func NewClient(config config.ZendeskConfig) (*zendesk.Client, error) {
 	client, err := zendesk.NewClient(nil)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create Zendesk client: %w", err)
