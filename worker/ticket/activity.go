@@ -1,4 +1,4 @@
-package activities
+package ticket
 
 import (
 	"github.com/nukosuke/go-zendesk/zendesk"

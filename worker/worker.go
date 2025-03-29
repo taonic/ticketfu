@@ -8,8 +8,7 @@ import (
 	"github.com/taonic/ticketfu/config"
 	"github.com/taonic/ticketfu/openai"
 	"github.com/taonic/ticketfu/temporal"
-	"github.com/taonic/ticketfu/temporal/activities"
-	"github.com/taonic/ticketfu/temporal/workflows"
+	"github.com/taonic/ticketfu/worker/ticket"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -19,14 +18,15 @@ import (
 type Worker struct {
 	worker.Worker
 	config   config.WorkerConfig
-	activity *activities.Activity
+	activity *ticket.Activity
 	tClient  client.Client
 }
 
-func NewWorker(config config.WorkerConfig, activity *activities.Activity, tClient client.Client) *Worker {
+func NewWorker(config config.WorkerConfig, activity *ticket.Activity, tClient client.Client) *Worker {
 	worker := worker.New(tClient, temporal.TaskQueue, worker.Options{})
-	worker.RegisterWorkflow(workflows.TicketWorkflow)
+	worker.RegisterWorkflow(ticket.TicketWorkflow)
 	worker.RegisterActivity(activity.FetchTicket)
+	worker.RegisterActivity(activity.FetchComments)
 	return &Worker{
 		Worker:   worker,
 		config:   config,
@@ -58,7 +58,7 @@ var Module = fx.Options(
 	fx.Provide(temporal.NewClient),
 	fx.Provide(zendesk.NewClient),
 	fx.Provide(openai.NewClient),
-	fx.Provide(activities.NewActivity),
+	fx.Provide(ticket.NewActivity),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {
 		lc.Append(fx.Hook{
 			OnStart: worker.Start,

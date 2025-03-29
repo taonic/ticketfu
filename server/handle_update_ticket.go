@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/taonic/ticketfu/temporal"
-	"github.com/taonic/ticketfu/temporal/workflows"
+	"github.com/taonic/ticketfu/worker/ticket"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
 )
@@ -35,10 +35,10 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 	log.Printf("Received query for: subdomain: %v ticket_id: %v", subdomain, ticketID)
 
 	// Create a unique workflow ID
-	workflowID := fmt.Sprintf(workflows.TicketWorkflowIDTemplate, ticketID)
+	workflowID := fmt.Sprintf(ticket.TicketWorkflowIDTemplate, ticketID)
 
 	// Create workflow input with SummarizeTicketInput struct
-	input := workflows.UpsertTicketInput{
+	input := ticket.UpsertTicketInput{
 		TicketID: ticketID,
 	}
 
@@ -55,11 +55,11 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 	wr, err := h.temporalClient.SignalWithStartWorkflow(
 		ctx,
 		workflowID,
-		workflows.UpdateTicketSummarySignal,
-		nil,
-		workflowOptions,
-		workflows.TicketWorkflow,
+		ticket.UpsertSignal,
 		input,
+		workflowOptions,
+		ticket.TicketWorkflow,
+		nil,
 	)
 
 	if err != nil {
