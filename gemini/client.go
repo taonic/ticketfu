@@ -8,8 +8,10 @@ import (
 )
 
 type API struct {
-	Client *genai.Client
-	Model  string
+	Client              *genai.Client
+	Model               string
+	TicketSummaryPrompt string
+	OrgSummaryPrompt    string
 }
 
 func NewAPI(config config.AIConfig) (*API, error) {
@@ -22,8 +24,10 @@ func NewAPI(config config.AIConfig) (*API, error) {
 	}
 
 	api := API{
-		Client: client,
-		Model:  config.GeminiModel,
+		Client:              client,
+		Model:               config.GeminiModel,
+		TicketSummaryPrompt: config.TicketSummaryPrompt,
+		OrgSummaryPrompt:    config.OrgSummaryPrompt,
 	}
 
 	return &api, nil

@@ -96,10 +96,12 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 	}
 
 	aiConfig := config.AIConfig{
-		OpenAIAPIKey: ctx.String(FlagOpenAIAPIKey),
-		OpenAIModel:  ctx.String(FlagOpenAIModel),
-		GeminiAPIKey: ctx.String(FlagGeminiAPIKey),
-		GeminiModel:  ctx.String(FlagGeminiModel),
+		OpenAIAPIKey:        ctx.String(FlagOpenAIAPIKey),
+		OpenAIModel:         ctx.String(FlagOpenAIModel),
+		GeminiAPIKey:        ctx.String(FlagGeminiAPIKey),
+		GeminiModel:         ctx.String(FlagGeminiModel),
+		TicketSummaryPrompt: ctx.String(FlagTicketSummaryPrompt),
+		OrgSummaryPrompt:    ctx.String(FlagOrgSummaryPrompt),
 	}
 
 	temporalClientConfig := config.TemporalClientConfig{

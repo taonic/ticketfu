@@ -12,9 +12,9 @@ const (
 	TaskQueue = "ticket-queue"
 
 	UpsertTicketSignal = "upsert-ticket-signal"
-	QueryTicketSummary = "ticket-query-summary"
+	QueryTicketSummary = "query-ticket-summary"
 
-	TicketWorkflowIDTemplate = "ticket-workflow-%s" //ticket-workflow-1234 where 1234 is the ticket ID
+	TicketWorkflowIDTemplate = "ticket-workflow-%s" // e.g. ticket-workflow-1234 where 1234 is the ticket ID
 
 	QueryOrgSummary        = "QueryOrgSummary"
 	UpdateOrgSummarySignal = "UpdateOrgSummary"

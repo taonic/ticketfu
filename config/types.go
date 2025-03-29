@@ -20,6 +20,9 @@ type (
 		OpenAIModel  string
 		GeminiAPIKey string
 		GeminiModel  string
+
+		TicketSummaryPrompt string
+		OrgSummaryPrompt    string
 	}
 
 	ServerConfig struct {
