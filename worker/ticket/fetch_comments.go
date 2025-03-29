@@ -6,22 +6,33 @@ import (
 	"strconv"
 
 	gozendesk "github.com/nukosuke/go-zendesk/zendesk"
-	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/temporal"
 )
 
-func (a *Activity) FetchComments(ctx context.Context, id string, cursor string) (*zendesk.FetchCommentsResponse, error) {
-	intID, err := strconv.ParseInt(id, 10, 64)
+type (
+	FetchCommentsInput struct {
+		ID     string
+		Cursor string
+	}
+
+	FetchCommentsOutput struct {
+		Comments   []string
+		NextCursor string
+	}
+)
+
+func (a *Activity) FetchComments(ctx context.Context, input FetchCommentsInput) (*FetchCommentsOutput, error) {
+	intID, err := strconv.ParseInt(input.ID, 10, 64)
 	if err != nil {
 		return nil, err
 	}
 
-	var allComments []gozendesk.TicketComment
+	var rawComments []gozendesk.TicketComment
 
 	cpb := gozendesk.CBPOptions{
 		CursorPagination: gozendesk.CursorPagination{
 			PageSize:  100,
-			PageAfter: cursor,
+			PageAfter: input.Cursor,
 		},
 		CommonOptions: gozendesk.CommonOptions{
 			SortOrder: "asc",
@@ -29,8 +40,6 @@ func (a *Activity) FetchComments(ctx context.Context, id string, cursor string) 
 			Id:        intID,
 		},
 	}
-
-	fmt.Println(cpb)
 
 	for {
 		comments, meta, err := a.zClient.GetTicketCommentsCBP(ctx, &cpb)
@@ -40,21 +49,21 @@ func (a *Activity) FetchComments(ctx context.Context, id string, cursor string) 
 			}
 			return nil, fmt.Errorf("failed to fetch comments: %w", err)
 		}
-		allComments = append(allComments, comments...)
+		rawComments = append(rawComments, comments...)
 		cpb.CursorPagination.PageAfter = meta.AfterCursor
 		if !meta.HasMore {
 			break
 		}
 	}
 
-	comments := make([]string, len(allComments))
-	for i, comment := range allComments {
+	comments := make([]string, len(rawComments))
+	for i, comment := range rawComments {
 		comments[i] = comment.PlainBody
 	}
 
-	response := zendesk.FetchCommentsResponse{
-		Comments:    comments,
-		AfterCursor: cpb.CursorPagination.PageAfter,
+	response := FetchCommentsOutput{
+		Comments:   comments,
+		NextCursor: cpb.CursorPagination.PageAfter,
 	}
 
 	return &response, nil

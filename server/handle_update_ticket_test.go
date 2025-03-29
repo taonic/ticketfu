@@ -47,7 +47,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 					mock.MatchedBy(func(options client.StartWorkflowOptions) bool {
 						return options.ID == workflowID && options.TaskQueue == temporal.TaskQueue
 					}),
-					mock.AnythingOfType("func(internal.Context, zendesk.Ticket) error"),
+					mock.AnythingOfType("func(internal.Context, ticket.Ticket) error"),
 					nil,
 				).Return(mockRun, nil)
 			},

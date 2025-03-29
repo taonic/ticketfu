@@ -22,7 +22,9 @@ const (
 
 	// AI-specific flags
 	FlagOpenAIAPIKey = "openai-api-key"
+	FlagOpenAIModel  = "openai-model"
 	FlagGeminiAPIKey = "gemini-api-key"
+	FlagGeminiModel  = "gemini-model"
 )
 
 // Temporal flags shared across commands
@@ -87,10 +89,24 @@ var aiFlags = []cli.Flag{
 		Required: true,
 	},
 	&cli.StringFlag{
+		Name:     FlagOpenAIModel,
+		EnvVars:  []string{"OPENAI_MODEL"},
+		Usage:    "OpenAI's LLM Model",
+		Required: false,
+		Value:    "gpt-4o-mini",
+	},
+	&cli.StringFlag{
 		Name:     FlagGeminiAPIKey,
 		EnvVars:  []string{"GEMINI_API_KEY"},
 		Usage:    "Gemini API Key",
-		Required: true,
+		Required: false,
+	},
+	&cli.StringFlag{
+		Name:     FlagGeminiModel,
+		EnvVars:  []string{"GEMINI_MODEL"},
+		Usage:    "Gemini's LLM Model",
+		Required: false,
+		Value:    "gemini-2.0-flash",
 	},
 }
 

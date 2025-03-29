@@ -17,7 +17,9 @@ type (
 
 	AIConfig struct {
 		OpenAIAPIKey string
+		OpenAIModel  string
 		GeminiAPIKey string
+		GeminiModel  string
 	}
 
 	ServerConfig struct {

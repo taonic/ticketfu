@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/taonic/ticketfu/config"
+	"github.com/taonic/ticketfu/gemini"
 	"github.com/taonic/ticketfu/openai"
 	"github.com/taonic/ticketfu/temporal"
 	"github.com/taonic/ticketfu/worker/ticket"
@@ -27,6 +28,7 @@ func NewWorker(config config.WorkerConfig, activity *ticket.Activity, tClient cl
 	worker.RegisterWorkflow(ticket.TicketWorkflow)
 	worker.RegisterActivity(activity.FetchTicket)
 	worker.RegisterActivity(activity.FetchComments)
+	worker.RegisterActivity(activity.GenSummary)
 	return &Worker{
 		Worker:   worker,
 		config:   config,
@@ -58,6 +60,7 @@ var Module = fx.Options(
 	fx.Provide(temporal.NewClient),
 	fx.Provide(zendesk.NewClient),
 	fx.Provide(openai.NewClient),
+	fx.Provide(gemini.NewAPI),
 	fx.Provide(ticket.NewActivity),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {
 		lc.Append(fx.Hook{

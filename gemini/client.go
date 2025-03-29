@@ -7,9 +7,24 @@ import (
 	"google.golang.org/genai"
 )
 
-func NewClient(config config.AIConfig) (*genai.Client, error) {
-	return genai.NewClient(context.Background(), &genai.ClientConfig{
+type API struct {
+	Client *genai.Client
+	Model  string
+}
+
+func NewAPI(config config.AIConfig) (*API, error) {
+	client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
 		APIKey:  config.GeminiAPIKey,
 		Backend: genai.BackendGeminiAPI,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	api := API{
+		Client: client,
+		Model:  config.GeminiModel,
+	}
+
+	return &api, nil
 }

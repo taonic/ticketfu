@@ -95,9 +95,11 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 		ZendeskToken:     ctx.String(FlagZendeskToken),
 	}
 
-	openAIConfig := config.AIConfig{
+	aiConfig := config.AIConfig{
 		OpenAIAPIKey: ctx.String(FlagOpenAIAPIKey),
+		OpenAIModel:  ctx.String(FlagOpenAIModel),
 		GeminiAPIKey: ctx.String(FlagGeminiAPIKey),
+		GeminiModel:  ctx.String(FlagGeminiModel),
 	}
 
 	temporalClientConfig := config.TemporalClientConfig{
@@ -116,7 +118,7 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 			workerConfig,
 			temporalClientConfig,
 			zendeskConfig,
-			openAIConfig,
+			aiConfig,
 		),
 		worker.Module,
 	)

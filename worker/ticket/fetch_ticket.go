@@ -3,12 +3,20 @@ package ticket
 import (
 	"context"
 	"strconv"
-
-	"github.com/taonic/ticketfu/zendesk"
 )
 
-func (a *Activity) FetchTicket(ctx context.Context, id string) (*zendesk.Ticket, error) {
-	num, err := strconv.ParseInt(id, 10, 64)
+type (
+	FetchTicketInput struct {
+		ID string
+	}
+
+	FetchTicketOutput struct {
+		Ticket Ticket
+	}
+)
+
+func (a *Activity) FetchTicket(ctx context.Context, input FetchTicketInput) (*FetchTicketOutput, error) {
+	num, err := strconv.ParseInt(input.ID, 10, 64)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +41,7 @@ func (a *Activity) FetchTicket(ctx context.Context, id string) (*zendesk.Ticket,
 		return nil, err
 	}
 
-	ticket := zendesk.Ticket{
+	ticket := Ticket{
 		ID:           rawTicket.ID,
 		Subject:      rawTicket.Subject,
 		Description:  rawTicket.Description,
@@ -46,5 +54,5 @@ func (a *Activity) FetchTicket(ctx context.Context, id string) (*zendesk.Ticket,
 		UpdatedAt:    rawTicket.UpdatedAt,
 	}
 
-	return &ticket, nil
+	return &FetchTicketOutput{Ticket: ticket}, nil
 }
