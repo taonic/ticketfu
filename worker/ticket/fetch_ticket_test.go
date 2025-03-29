@@ -100,7 +100,7 @@ func TestActivity_FetchTicket_Success(t *testing.T) {
 	assert.Equal(t, testTicket.Status, output.Ticket.Status)
 	assert.Equal(t, testRequester.Name, output.Ticket.Requester)
 	assert.Equal(t, testAssignee.Name, output.Ticket.Assignee)
-	assert.Equal(t, testOrg.Name, output.Ticket.Organization)
+	assert.Equal(t, testOrg.Name, output.Ticket.OrganizationName)
 	assert.Equal(t, testTicket.CreatedAt, output.Ticket.CreatedAt)
 	assert.Equal(t, testTicket.UpdatedAt, output.Ticket.UpdatedAt)
 

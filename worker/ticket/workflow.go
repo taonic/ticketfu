@@ -1,7 +1,6 @@
 package ticket
 
 import (
-	"fmt"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -9,30 +8,23 @@ import (
 )
 
 const (
-	TaskQueue = "ticket-queue"
-
-	UpsertTicketSignal = "upsert-ticket-signal"
-	QueryTicketSummary = "query-ticket-summary"
-
+	UpsertTicketSignal       = "upsert-ticket-signal"
+	QueryTicketSummary       = "query-ticket-summary"
 	TicketWorkflowIDTemplate = "ticket-workflow-%s" // e.g. ticket-workflow-1234 where 1234 is the ticket ID
-
-	QueryOrgSummary        = "QueryOrgSummary"
-	UpdateOrgSummarySignal = "UpdateOrgSummary"
-
-	OrgWorkflowIDTemplate = "summarize-org-%s-%s" // <account-id>-<ticket-id>
 )
 
 type Ticket struct {
-	ID           int64
-	Subject      string
-	Description  string
-	Priority     string
-	Status       string
-	Requester    string
-	Assignee     string
-	Organization string
-	CreatedAt    *time.Time
-	UpdatedAt    *time.Time
+	ID               int64
+	Subject          string
+	Description      string
+	Priority         string
+	Status           string
+	Requester        string
+	Assignee         string
+	OrganizationID   int64
+	OrganizationName string
+	CreatedAt        *time.Time
+	UpdatedAt        *time.Time
 
 	// Comments and cursor
 	Comments   []string
@@ -94,7 +86,6 @@ func (s *ticketWorkflow) run() error {
 	var updateCount int
 	var pendingUpsert *UpsertTicketInput
 	selector.AddReceive(s.signalCh, func(ch workflow.ReceiveChannel, _ bool) {
-		updateCount++
 		ch.Receive(s.Context, &pendingUpsert)
 	})
 
@@ -118,9 +109,8 @@ func (s *ticketWorkflow) run() error {
 		if pendingUpsert != nil {
 			s.processPendingUpsert(pendingUpsert)
 			pendingUpsert = nil
+			updateCount++
 		}
-
-		fmt.Println(pendingUpsert)
 
 		if cancelled {
 			return temporal.NewCanceledError()
@@ -132,15 +122,15 @@ func (s *ticketWorkflow) run() error {
 
 func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) {
 	// fetch ticket if it hasn't been assigned
-	fetchTicketInput := FetchTicketInput{ID: pendingUpsert.TicketID}
-	fetchTicketOutput := FetchTicketOutput{}
-
 	if s.ticket.ID == 0 {
+		fetchTicketInput := FetchTicketInput{ID: pendingUpsert.TicketID}
+		fetchTicketOutput := FetchTicketOutput{}
+
 		workflow.ExecuteActivity(s.Context, s.activity.FetchTicket, fetchTicketInput).
 			Get(s.Context, &fetchTicketOutput)
-	}
 
-	s.ticket = fetchTicketOutput.Ticket
+		s.ticket = fetchTicketOutput.Ticket
+	}
 
 	// fetch comments with the cursor
 	fetchCommentsInput := FetchCommentsInput{ID: pendingUpsert.TicketID, Cursor: s.ticket.NextCursor}
@@ -158,11 +148,23 @@ func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) 
 	genSummaryInput := GenSummaryInput{Ticket: s.ticket}
 	genSummaryOutput := GenSummaryOutput{}
 
-	workflow.ExecuteActivity(s.Context, s.activity.GenSummary, genSummaryInput).
+	workflow.ExecuteActivity(s.Context, s.activity.GenTicketSummary, genSummaryInput).
 		Get(s.Context, &genSummaryOutput)
 
 	if genSummaryOutput.Summary != "" {
 		s.ticket.Summary = genSummaryOutput.Summary
+	}
+
+	// signal organization
+	if s.ticket.OrganizationID != 0 {
+		signalOrganizationInput := SignalOrganizationInput{
+			OrganizationID: s.ticket.OrganizationID,
+			TicketID:       s.ticket.ID,
+			TicketSummary:  s.ticket.Summary,
+		}
+
+		workflow.ExecuteActivity(s.Context, s.activity.SignalOrganization, signalOrganizationInput).
+			Get(s.Context, nil)
 	}
 }
 

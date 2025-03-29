@@ -8,6 +8,7 @@ import (
 	"github.com/taonic/ticketfu/config"
 	"github.com/taonic/ticketfu/genai"
 	"github.com/taonic/ticketfu/temporal"
+	"github.com/taonic/ticketfu/worker/org"
 	"github.com/taonic/ticketfu/worker/ticket"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
@@ -15,24 +16,39 @@ import (
 	"go.uber.org/fx"
 )
 
+const (
+	TaskQueue = "ticketfu-queue"
+)
+
 type Worker struct {
 	worker.Worker
-	config   config.WorkerConfig
-	activity *ticket.Activity
-	tClient  client.Client
+	config               config.WorkerConfig
+	ticketActivity       *ticket.Activity
+	organizationActivity *org.Activity
+	tClient              client.Client
 }
 
-func NewWorker(config config.WorkerConfig, activity *ticket.Activity, tClient client.Client) *Worker {
-	worker := worker.New(tClient, temporal.TaskQueue, worker.Options{})
+func NewWorker(config config.WorkerConfig, ticketActivity *ticket.Activity, organizationActivity *org.Activity, tClient client.Client) *Worker {
+	worker := worker.New(tClient, TaskQueue, worker.Options{})
+
+	// register ticket workflow and activities
 	worker.RegisterWorkflow(ticket.TicketWorkflow)
-	worker.RegisterActivity(activity.FetchTicket)
-	worker.RegisterActivity(activity.FetchComments)
-	worker.RegisterActivity(activity.GenSummary)
+	worker.RegisterActivity(ticketActivity.FetchTicket)
+	worker.RegisterActivity(ticketActivity.FetchComments)
+	worker.RegisterActivity(ticketActivity.GenTicketSummary)
+	worker.RegisterActivity(ticketActivity.SignalOrganization)
+
+	// register org workflow and activities
+	worker.RegisterWorkflow(org.OrganizationWorkflow)
+	worker.RegisterActivity(organizationActivity.FetchOrganization)
+	worker.RegisterActivity(organizationActivity.GenOrgSummary)
+
 	return &Worker{
-		Worker:   worker,
-		config:   config,
-		activity: activity,
-		tClient:  tClient,
+		Worker:               worker,
+		config:               config,
+		ticketActivity:       ticketActivity,
+		organizationActivity: organizationActivity,
+		tClient:              tClient,
 	}
 }
 
@@ -60,6 +76,7 @@ var Module = fx.Options(
 	fx.Provide(zendesk.NewClient),
 	fx.Provide(genai.NewAPI),
 	fx.Provide(ticket.NewActivity),
+	fx.Provide(org.NewActivity),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {
 		lc.Append(fx.Hook{
 			OnStart: worker.Start,

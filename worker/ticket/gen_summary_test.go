@@ -32,17 +32,17 @@ func (m *MockGeminiAPI) GetConfig() config.AIConfig {
 func createTestTicket() Ticket {
 	now := time.Now()
 	return Ticket{
-		ID:           12345,
-		Subject:      "Test Issue",
-		Description:  "This is a test description",
-		Priority:     "high",
-		Status:       "open",
-		Requester:    "John Doe",
-		Assignee:     "Support Agent",
-		Organization: "Test Org",
-		CreatedAt:    &now,
-		UpdatedAt:    &now,
-		Comments:     []string{"Comment 1", "Comment 2"},
+		ID:               12345,
+		Subject:          "Test Issue",
+		Description:      "This is a test description",
+		Priority:         "high",
+		Status:           "open",
+		Requester:        "John Doe",
+		Assignee:         "Support Agent",
+		OrganizationName: "Test Org",
+		CreatedAt:        &now,
+		UpdatedAt:        &now,
+		Comments:         []string{"Comment 1", "Comment 2"},
 	}
 }
 
@@ -140,7 +140,7 @@ func TestActivity_GenSummary(t *testing.T) {
 
 			// Execute
 			input := GenSummaryInput{Ticket: tc.ticket}
-			output, err := activity.GenSummary(ctx, input)
+			output, err := activity.GenTicketSummary(ctx, input)
 
 			// Verify
 			if tc.expectedError != "" {

@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/taonic/ticketfu/config"
-	"github.com/taonic/ticketfu/temporal"
+	"github.com/taonic/ticketfu/worker"
 	"github.com/taonic/ticketfu/worker/ticket"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/mocks"
@@ -45,7 +45,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 					ticket.UpsertTicketSignal,
 					mock.Anything,
 					mock.MatchedBy(func(options client.StartWorkflowOptions) bool {
-						return options.ID == workflowID && options.TaskQueue == temporal.TaskQueue
+						return options.ID == workflowID && options.TaskQueue == worker.TaskQueue
 					}),
 					mock.AnythingOfType("func(internal.Context, ticket.Ticket) error"),
 					nil,

@@ -18,7 +18,7 @@ type (
 	}
 )
 
-func (a *Activity) GenSummary(ctx context.Context, input GenSummaryInput) (*GenSummaryOutput, error) {
+func (a *Activity) GenTicketSummary(ctx context.Context, input GenSummaryInput) (*GenSummaryOutput, error) {
 	ticket := cleanse(input.Ticket)
 	ticketJSON, err := json.Marshal(ticket)
 	if err != nil {

@@ -33,7 +33,7 @@ func NewClient(config config.TemporalClientConfig) (client.Client, error) {
 		Identity:  clientIdentity(),
 	}
 
-	fmt.Println("Temporal client is connecting:", config.Address)
+	fmt.Println("Temporal client is connecting to :", config.Address)
 
 	// Configure TLS or API key
 	if config.TLSCertPath != "" && config.TLSKeyPath != "" {

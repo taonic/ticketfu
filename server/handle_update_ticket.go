@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/taonic/ticketfu/temporal"
+	"github.com/taonic/ticketfu/worker"
 	"github.com/taonic/ticketfu/worker/ticket"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
@@ -49,7 +49,7 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 	// Start or signal the workflow
 	workflowOptions := client.StartWorkflowOptions{
 		ID:        workflowID,
-		TaskQueue: temporal.TaskQueue,
+		TaskQueue: worker.TaskQueue,
 	}
 
 	wr, err := h.temporalClient.SignalWithStartWorkflow(

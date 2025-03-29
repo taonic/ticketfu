@@ -36,22 +36,25 @@ func (a *Activity) FetchTicket(ctx context.Context, input FetchTicketInput) (*Fe
 		return nil, err
 	}
 
-	orgnization, err := a.zClient.GetOrganization(ctx, rawTicket.OrganizationID)
-	if err != nil {
-		return nil, err
+	ticket := Ticket{
+		ID:             rawTicket.ID,
+		Subject:        rawTicket.Subject,
+		Description:    rawTicket.Description,
+		Priority:       rawTicket.Priority,
+		Status:         rawTicket.Status,
+		OrganizationID: rawTicket.OrganizationID,
+		Requester:      requester.Name,
+		Assignee:       assignee.Name,
+		CreatedAt:      rawTicket.CreatedAt,
+		UpdatedAt:      rawTicket.UpdatedAt,
 	}
 
-	ticket := Ticket{
-		ID:           rawTicket.ID,
-		Subject:      rawTicket.Subject,
-		Description:  rawTicket.Description,
-		Priority:     rawTicket.Priority,
-		Status:       rawTicket.Status,
-		Organization: orgnization.Name,
-		Requester:    requester.Name,
-		Assignee:     assignee.Name,
-		CreatedAt:    rawTicket.CreatedAt,
-		UpdatedAt:    rawTicket.UpdatedAt,
+	if ticket.OrganizationID != 0 {
+		organization, err := a.zClient.GetOrganization(ctx, rawTicket.OrganizationID)
+		if err != nil {
+			return nil, err
+		}
+		ticket.OrganizationName = organization.Name
 	}
 
 	return &FetchTicketOutput{Ticket: ticket}, nil
