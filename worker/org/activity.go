@@ -1,4 +1,4 @@
-package ticket
+package org
 
 import (
 	"github.com/taonic/ticketfu/genai"

@@ -6,8 +6,7 @@ import (
 	"log"
 
 	"github.com/taonic/ticketfu/config"
-	"github.com/taonic/ticketfu/gemini"
-	"github.com/taonic/ticketfu/openai"
+	"github.com/taonic/ticketfu/genai"
 	"github.com/taonic/ticketfu/temporal"
 	"github.com/taonic/ticketfu/worker/ticket"
 	"github.com/taonic/ticketfu/zendesk"
@@ -59,8 +58,7 @@ var Module = fx.Options(
 	fx.Provide(NewWorker),
 	fx.Provide(temporal.NewClient),
 	fx.Provide(zendesk.NewClient),
-	fx.Provide(openai.NewClient),
-	fx.Provide(gemini.NewAPI),
+	fx.Provide(genai.NewAPI),
 	fx.Provide(ticket.NewActivity),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {
 		lc.Append(fx.Hook{

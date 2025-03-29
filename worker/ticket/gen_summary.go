@@ -26,12 +26,12 @@ func (a *Activity) GenSummary(ctx context.Context, input GenSummaryInput) (*GenS
 	}
 
 	config := &genai.GenerateContentConfig{
-		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: a.geminiAPI.TicketSummaryPrompt}}},
+		SystemInstruction: &genai.Content{Parts: []*genai.Part{{Text: a.genAPI.GetConfig().TicketSummaryPrompt}}},
 	}
 
-	result, err := a.geminiAPI.Client.Models.GenerateContent(
+	result, err := a.genAPI.GenerateContent(
 		ctx,
-		a.geminiAPI.Model,
+		a.genAPI.GetConfig().GeminiModel,
 		genai.Text(string(ticketJSON)),
 		config,
 	)
