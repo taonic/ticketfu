@@ -15,8 +15,9 @@ type (
 		ZendeskToken     string
 	}
 
-	OpenAIConfig struct {
+	AIConfig struct {
 		OpenAIAPIKey string
+		GeminiAPIKey string
 	}
 
 	ServerConfig struct {
@@ -29,7 +30,7 @@ type (
 	WorkerConfig struct {
 		Temporal  TemporalClientConfig
 		Zendesk   ZendeskConfig
-		OpenAI    OpenAIConfig
+		OpenAI    AIConfig
 		QueueName string
 		Threads   int
 	}

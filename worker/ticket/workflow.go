@@ -14,10 +14,6 @@ type UpsertTicketInput struct {
 	TicketID string
 }
 
-type UpdateTicketOutput struct {
-	Summary string
-}
-
 type ticketWorkflow struct {
 	workflow.Context
 	signalCh                   workflow.ReceiveChannel
@@ -39,7 +35,7 @@ func newTicketWorkflow(ctx workflow.Context, ticket zendesk.Ticket) *ticketWorkf
 				MaximumAttempts:    10,
 			},
 		}),
-		signalCh:                   workflow.GetSignalChannel(ctx, UpsertSignal),
+		signalCh:                   workflow.GetSignalChannel(ctx, UpsertTicketSignal),
 		updatesBeforeContinueAsNew: 500,
 		ticket:                     ticket,
 	}

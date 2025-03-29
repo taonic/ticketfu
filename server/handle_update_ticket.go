@@ -55,7 +55,7 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 	wr, err := h.temporalClient.SignalWithStartWorkflow(
 		ctx,
 		workflowID,
-		ticket.UpsertSignal,
+		ticket.UpsertTicketSignal,
 		input,
 		workflowOptions,
 		ticket.TicketWorkflow,

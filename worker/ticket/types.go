@@ -4,12 +4,12 @@ package ticket
 const (
 	TaskQueue = "ticket-queue"
 
-	UpdateTicketWorkflow     = "SummarizeTicketWorkflow"
-	UpdateTicketStatusSignal = "update-ticket-status"
+	UpsertTicketSignal = "upsert-ticket-signal"
+
 	TicketWorkflowIDTemplate = "ticket-workflow-%s" //ticket-workflow-1234 where 1234 is the ticket ID
 
 	QueryOrgSummary        = "QueryOrgSummary"
 	UpdateOrgSummarySignal = "UpdateOrgSummary"
-	UpsertSignal           = "UpdateTicketSummary"
-	OrgWorkflowIDTemplate  = "summarize-org-%s-%s" // <account-id>-<ticket-id>
+
+	OrgWorkflowIDTemplate = "summarize-org-%s-%s" // <account-id>-<ticket-id>
 )

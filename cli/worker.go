@@ -31,7 +31,7 @@ var workerFlags = append(append(append(append([]cli.Flag{
 		Usage:   "number of worker threads",
 		Value:   4,
 	},
-}, temporalFlags...), commonFlags...), zendeskFlags...), openaiFlags...)
+}, temporalFlags...), commonFlags...), zendeskFlags...), aiFlags...)
 
 // NewWorkerCommand creates a new worker command with subcommands
 func NewWorkerCommand() *cli.Command {
@@ -95,8 +95,9 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 		ZendeskToken:     ctx.String(FlagZendeskToken),
 	}
 
-	openAIConfig := config.OpenAIConfig{
+	openAIConfig := config.AIConfig{
 		OpenAIAPIKey: ctx.String(FlagOpenAIAPIKey),
+		GeminiAPIKey: ctx.String(FlagGeminiAPIKey),
 	}
 
 	temporalClientConfig := config.TemporalClientConfig{
