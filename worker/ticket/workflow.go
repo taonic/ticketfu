@@ -96,13 +96,6 @@ func (s *ticketWorkflow) run() error {
 
 	// Continually select until there are too many requests and no pending
 	// selects.
-	//
-	// The reason we check selector.HasPending even when we've reached the request
-	// limit is to make sure no events get lost. HasPending will continually
-	// return true while an unresolved future or a buffered signal exists. If, for
-	// example, we did not check this and there was an unhandled signal buffered
-	// locally, continue-as-new would be returned without it being handled and the
-	// new workflow wouldn't get the signal either. So it'd be lost.
 	for updateCount < s.updatesBeforeContinueAsNew || selector.HasPending() {
 		selector.Select(s)
 

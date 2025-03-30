@@ -3,6 +3,7 @@ package org
 import (
 	"time"
 
+	"github.com/taonic/ticketfu/worker/util"
 	sdklog "go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -12,6 +13,7 @@ const (
 	UpsertOrganizationSignal       = "upsert-organization-signal"
 	QueryOrganizationSummary       = "query-organization-summary"
 	OrganizationWorkflowIDTemplate = "organization-workflow-%d" // e.g. org-workflow-123
+	MaxTicketSummaries             = 500
 )
 
 type Organization struct {
@@ -128,16 +130,26 @@ func (s *organizationWorkflow) processPendingUpsert(pendingUpsert *UpsertOrganiz
 		s.organization = fetchOrganizationOutput.Organization
 	}
 
-	// generate summary if needed
+	// Initialize ticket summary map
+	if s.organization.TicketSummaries == nil {
+		s.organization.TicketSummaries = make(map[int64]string)
+	}
+
+	// Generate summary if needed
 	targetSummary, exist := s.organization.TicketSummaries[pendingUpsert.TicketID]
 	if !exist || targetSummary != pendingUpsert.TicketSummary {
-		if s.organization.TicketSummaries == nil {
-			s.organization.TicketSummaries = make(map[int64]string)
-		}
-
 		s.logger.Debug("Updating org summary", "org-id", s.organization.ID, "ticket-id", pendingUpsert.TicketID)
 		s.organization.TicketSummaries[pendingUpsert.TicketID] = pendingUpsert.TicketSummary
 
+		// Truncate by keeping up to 500 most recent tickets
+		// todo: make it configurable
+		var truncated bool
+		s.organization.TicketSummaries, truncated = util.TruncateStringMap(s.organization.TicketSummaries, MaxTicketSummaries)
+		if truncated {
+			s.logger.Debug("Truncated ticket summaries to the limit: ", MaxTicketSummaries)
+		}
+
+		// Generate org summary
 		genSummaryInput := GenSummaryInput{Organization: s.organization}
 		genSummaryOutput := GenSummaryOutput{}
 
