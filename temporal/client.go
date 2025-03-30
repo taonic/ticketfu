@@ -11,6 +11,8 @@ import (
 
 	"github.com/taonic/ticketfu/config"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/common/log/tag"
 )
 
 // headerProvider implements the HeadersProvider interface required by Temporal
@@ -26,14 +28,15 @@ func (h *headerProvider) GetHeaders(ctx context.Context) (map[string]string, err
 }
 
 // NewClient creates a new Temporal client using the provided configuration
-func NewClient(config config.TemporalClientConfig) (client.Client, error) {
+func NewClient(config config.TemporalClientConfig, logger log.Logger) (client.Client, error) {
 	options := client.Options{
 		HostPort:  config.Address,
 		Namespace: config.Namespace,
 		Identity:  clientIdentity(),
+		Logger:    log.NewSdkLogger(logger),
 	}
 
-	fmt.Println("Temporal client is connecting to :", config.Address)
+	logger.Info("Temporal client is connecting", tag.Address(config.Address))
 
 	// Configure TLS or API key
 	if config.TLSCertPath != "" && config.TLSKeyPath != "" {

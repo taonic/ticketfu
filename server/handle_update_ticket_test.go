@@ -15,6 +15,7 @@ import (
 	"github.com/taonic/ticketfu/worker/ticket"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/mocks"
+	"go.temporal.io/server/common/log"
 )
 
 func TestHandleUpdateTicket(t *testing.T) {
@@ -113,7 +114,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 			// Create server
 			server := NewHTTPServer(config.ServerConfig{
 				APIKey: "test-api-key",
-			}, mockClient)
+			}, mockClient, log.NewTestLogger())
 
 			// Create request
 			var reqBody []byte

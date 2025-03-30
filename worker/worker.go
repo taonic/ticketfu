@@ -2,8 +2,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	"github.com/taonic/ticketfu/config"
 	"github.com/taonic/ticketfu/genai"
@@ -13,6 +11,8 @@ import (
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/common/log/tag"
 	"go.uber.org/fx"
 )
 
@@ -22,13 +22,20 @@ const (
 
 type Worker struct {
 	worker.Worker
+	logger               log.Logger
 	config               config.WorkerConfig
 	ticketActivity       *ticket.Activity
 	organizationActivity *org.Activity
 	tClient              client.Client
 }
 
-func NewWorker(config config.WorkerConfig, ticketActivity *ticket.Activity, organizationActivity *org.Activity, tClient client.Client) *Worker {
+func NewWorker(
+	config config.WorkerConfig,
+	logger log.Logger,
+	ticketActivity *ticket.Activity,
+	organizationActivity *org.Activity,
+	tClient client.Client,
+) *Worker {
 	worker := worker.New(tClient, TaskQueue, worker.Options{})
 
 	// register ticket workflow and activities
@@ -45,6 +52,7 @@ func NewWorker(config config.WorkerConfig, ticketActivity *ticket.Activity, orga
 
 	return &Worker{
 		Worker:               worker,
+		logger:               logger,
 		config:               config,
 		ticketActivity:       ticketActivity,
 		organizationActivity: organizationActivity,
@@ -53,19 +61,19 @@ func NewWorker(config config.WorkerConfig, ticketActivity *ticket.Activity, orga
 }
 
 // Start initializes and starts the worker
-func (w *Worker) Start(ctx context.Context) error {
-	fmt.Println("Starting worker")
-	err := w.Run(worker.InterruptCh())
+func (w *Worker) OnStart(ctx context.Context) error {
+	w.logger.Info("Starting worker")
+	err := w.Start()
 	if err != nil {
-		log.Fatalln("Unable to start worker", err)
+		w.logger.Fatal("Unable to start worker", tag.Error(err))
 	}
 	return nil
 }
 
 // Stop gracefully shuts down the worker
-func (w *Worker) Stop(ctx context.Context) error {
-	fmt.Println("Stopping worker...")
-	// Graceful shutdown implementation goes here
+func (w *Worker) OnStop(ctx context.Context) error {
+	w.logger.Info("Stopping worker")
+	w.Stop()
 	return nil
 }
 
@@ -79,8 +87,8 @@ var Module = fx.Options(
 	fx.Provide(org.NewActivity),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {
 		lc.Append(fx.Hook{
-			OnStart: worker.Start,
-			OnStop:  worker.Stop,
+			OnStart: worker.OnStart,
+			OnStop:  worker.OnStop,
 		})
 	}),
 )

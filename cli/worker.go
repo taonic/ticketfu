@@ -9,6 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/log"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 )
 
 const (
@@ -59,12 +60,16 @@ func startWorker(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Start and wait for app to complete
 	if err := app.Start(ctx); err != nil {
 		return err
 	}
 
 	<-app.Done()
+
+	if err := app.Stop(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -79,10 +84,13 @@ func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
 
 // NewWorkerApp creates an fx application for the worker command
 func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
-	var logCfg log.Config
-	if logLevel := ctx.String(FlagLogLevel); len(logLevel) != 0 {
-		logCfg.Level = logLevel
+	logCfg := log.Config{
+		Level:  ctx.String(FlagLogLevel),
+		Format: ctx.String(FlagLogFormat),
 	}
+	zapLogger := log.BuildZapLogger(logCfg)
+	newLogger := func() log.Logger { return log.NewZapLogger(zapLogger) }
+	fxEventLogger := func() fxevent.Logger { return &fxevent.ZapLogger{Logger: zapLogger} }
 
 	workerConfig, err := NewWorkerConfig(ctx)
 	if err != nil {
@@ -113,9 +121,8 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 	}
 
 	app := fx.New(
-		fx.Provide(func() log.Logger {
-			return log.NewZapLogger(log.BuildZapLogger(logCfg))
-		}),
+		fx.WithLogger(fxEventLogger),
+		fx.Provide(newLogger),
 		fx.Supply(
 			workerConfig,
 			temporalClientConfig,

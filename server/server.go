@@ -7,6 +7,7 @@ import (
 	"github.com/taonic/ticketfu/config"
 	"github.com/taonic/ticketfu/temporal"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/server/common/log"
 	"go.uber.org/fx"
 )
 
@@ -14,21 +15,22 @@ type Server struct {
 	config         config.ServerConfig
 	httpServer     *HTTPServer
 	temporalClient client.Client
+	logger         log.Logger
 }
 
-func NewServer(config config.ServerConfig, httpServer *HTTPServer, temporalClient client.Client) *Server {
+func NewServer(config config.ServerConfig, httpServer *HTTPServer, temporalClient client.Client, logger log.Logger) *Server {
 	return &Server{
 		config:         config,
 		httpServer:     httpServer,
 		temporalClient: temporalClient,
+		logger:         logger,
 	}
 }
 
-// Start initializes and starts the server
-func (s *Server) Start(ctx context.Context) error {
-	fmt.Println("Starting server")
+// OnStart initializes and starts the server
+func (s *Server) OnStart(ctx context.Context) error {
+	s.logger.Info("Starting server")
 
-	// Start the HTTP server
 	if err := s.httpServer.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start HTTP server: %w", err)
 	}
@@ -36,11 +38,10 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
-// Stop gracefully shuts down the server
-func (s *Server) Stop(ctx context.Context) error {
-	fmt.Println("Stopping server...")
+// OnStop gracefully shuts down the server
+func (s *Server) OnStop(ctx context.Context) error {
+	s.logger.Info("Stopping server...")
 
-	// Stop the HTTP server
 	if err := s.httpServer.Stop(ctx); err != nil {
 		return fmt.Errorf("failed to stop HTTP server: %w", err)
 	}
@@ -55,8 +56,8 @@ var Module = fx.Options(
 	fx.Provide(NewServer),
 	fx.Invoke(func(lc fx.Lifecycle, server *Server) {
 		lc.Append(fx.Hook{
-			OnStart: server.Start,
-			OnStop:  server.Stop,
+			OnStart: server.OnStart,
+			OnStop:  server.OnStop,
 		})
 	}),
 )

@@ -6,7 +6,8 @@ import (
 
 const (
 	// Common flag names
-	FlagLogLevel = "log-level"
+	FlagLogLevel  = "log-level"
+	FlagLogFormat = "log-format"
 
 	// Temporal-specific flags
 	FlagTemporalAddress   = "temporal-address"
@@ -171,5 +172,14 @@ var commonFlags = []cli.Flag{
 		EnvVars:  []string{"LOG_LEVEL"},
 		Usage:    "Set log level(debug, info, warn, error). Default level is info",
 		Required: false,
+		Value:    "info",
+	},
+	&cli.StringFlag{
+		Name:     FlagLogFormat,
+		Aliases:  []string{"f"},
+		EnvVars:  []string{"LOG_FORMAT"},
+		Usage:    "Set log format(json, console). Default format is json",
+		Required: false,
+		Value:    "json",
 	},
 }

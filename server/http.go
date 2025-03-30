@@ -9,10 +9,13 @@ import (
 
 	"github.com/taonic/ticketfu/config"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/common/log/tag"
 )
 
 // HTTPServer encapsulates the HTTP server functionality
 type HTTPServer struct {
+	logger         log.Logger
 	server         *http.Server
 	mux            *http.ServeMux
 	config         config.ServerConfig
@@ -20,7 +23,7 @@ type HTTPServer struct {
 }
 
 // NewHTTPServer creates a new HTTP server with configured mux router
-func NewHTTPServer(config config.ServerConfig, temporalClient client.Client) *HTTPServer {
+func NewHTTPServer(config config.ServerConfig, temporalClient client.Client, logger log.Logger) *HTTPServer {
 	mux := http.NewServeMux()
 
 	// Create the server with the mux as the handler
@@ -33,6 +36,7 @@ func NewHTTPServer(config config.ServerConfig, temporalClient client.Client) *HT
 	}
 
 	return &HTTPServer{
+		logger:         logger,
 		server:         server,
 		mux:            mux,
 		config:         config,
@@ -48,11 +52,11 @@ func (h *HTTPServer) Start(ctx context.Context) error {
 	// Start the server in a goroutine
 	go func() {
 		if err := h.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("HTTP server error: %v\n", err)
+			h.logger.Error("HTTP server encountered error", tag.Error(err))
 		}
 	}()
 
-	fmt.Printf("HTTP server started on %s\n", h.server.Addr)
+	h.logger.Info("HTTP server started", tag.Address(h.server.Addr))
 	return nil
 }
 
@@ -72,7 +76,7 @@ func (h *HTTPServer) Stop(ctx context.Context) error {
 		return fmt.Errorf("HTTP server shutdown error: %w", err)
 	}
 
-	fmt.Println("HTTP server stopped")
+	h.logger.Info("HTTP server stopped")
 	return nil
 }
 

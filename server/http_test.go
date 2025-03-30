@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/taonic/ticketfu/config"
 	"go.temporal.io/sdk/mocks"
+	"go.temporal.io/server/common/log"
 )
 
 func TestHTTPServer_RegisterRoutes(t *testing.T) {
@@ -29,7 +30,7 @@ func TestHTTPServer_RegisterRoutes(t *testing.T) {
 	mockClient := &mocks.Client{}
 	mockClient.On("CheckHealth", mock.Anything, mock.Anything).Return(nil, nil)
 
-	server := NewHTTPServer(cfg, mockClient)
+	server := NewHTTPServer(cfg, mockClient, log.NewTestLogger())
 	server.registerRoutes()
 
 	req := httptest.NewRequest("GET", "/health", nil)
@@ -75,7 +76,7 @@ func TestHTTPServer_HealthEndpoint(t *testing.T) {
 			mockClient := &mocks.Client{}
 			mockClient.On("CheckHealth", mock.Anything, mock.Anything).Return(nil, tc.checkHealthErr)
 
-			server := NewHTTPServer(cfg, mockClient)
+			server := NewHTTPServer(cfg, mockClient, log.NewTestLogger())
 			server.registerRoutes()
 
 			req := httptest.NewRequest("GET", "/health", nil)
@@ -114,7 +115,7 @@ func TestHTTPServer_StartStop(t *testing.T) {
 	mockClient := &mocks.Client{}
 	mockClient.On("Close").Return()
 
-	server := NewHTTPServer(cfg, mockClient)
+	server := NewHTTPServer(cfg, mockClient, log.NewTestLogger())
 	server.server.Addr = "localhost:0"
 
 	ctx := context.Background()
