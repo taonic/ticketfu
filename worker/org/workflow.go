@@ -16,6 +16,10 @@ const (
 	MaxTicketSummaries             = 500
 )
 
+var (
+	updatesBeforeContinueAsNew = 500
+)
+
 type Organization struct {
 	ID      int64
 	Name    string
@@ -60,7 +64,7 @@ func newOrganizationWorkflow(ctx workflow.Context, organization Organization) *o
 		}),
 		logger:                     sdklog.With(workflow.GetLogger(ctx)),
 		signalCh:                   workflow.GetSignalChannel(ctx, UpsertOrganizationSignal),
-		updatesBeforeContinueAsNew: 500,
+		updatesBeforeContinueAsNew: updatesBeforeContinueAsNew,
 		organization:               organization,
 	}
 }
