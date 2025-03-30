@@ -13,9 +13,9 @@ import (
 
 const (
 	// Server-specific flags
-	FlagServerHost = "host"
-	FlagServerPort = "port"
-	FlagAPIKey     = "api-key"
+	FlagServerHost     = "host"
+	FlagServerPort     = "port"
+	FlagServerAPIToken = "server-api-token"
 )
 
 // Server-specific flags
@@ -33,7 +33,7 @@ var serverFlags = append(append([]cli.Flag{
 		Value:   8080,
 	},
 	&cli.StringFlag{
-		Name:     FlagAPIKey,
+		Name:     FlagServerAPIToken,
 		Aliases:  []string{"t"},
 		EnvVars:  []string{"SERVER_API_TOKEN"},
 		Usage:    "Server API token for authenticating Zendesk webhook requests",
@@ -91,9 +91,9 @@ func NewServerApp(ctx *cli.Context) (*fx.App, error) {
 	fxEventLogger := func() fxevent.Logger { return &fxevent.ZapLogger{Logger: zapLogger} }
 
 	serverConfig := config.ServerConfig{
-		Host:   ctx.String(FlagServerHost),
-		Port:   ctx.Int(FlagServerPort),
-		APIKey: ctx.String(FlagAPIKey),
+		Host:     ctx.String(FlagServerHost),
+		Port:     ctx.Int(FlagServerPort),
+		APIToken: ctx.String(FlagServerAPIToken),
 	}
 
 	temporalClientConfig := config.TemporalClientConfig{

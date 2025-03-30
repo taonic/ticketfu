@@ -86,7 +86,7 @@ func (h *HTTPServer) registerRoutes() {
 	h.mux.HandleFunc("GET /health", h.handleHealthCheck)
 
 	// API routes
-	verifyAPIKey := APIKeyMiddleware(h.config.APIKey)
+	verifyAPIKey := APIKeyMiddleware(h.config.APIToken)
 	h.mux.HandleFunc("GET  /api/v1/ticket/summary", verifyAPIKey(h.handleGetTicket))
 	h.mux.HandleFunc("POST /api/v1/ticket", verifyAPIKey(h.handleUpdateTicket))
 	h.mux.HandleFunc("GET /api/v1/organization/summary", verifyAPIKey(h.handleGetOrganization))

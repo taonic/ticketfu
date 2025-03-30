@@ -113,7 +113,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 
 			// Create server
 			server := NewHTTPServer(config.ServerConfig{
-				APIKey: "test-api-key",
+				APIToken: "test-api-key",
 			}, mockClient, log.NewTestLogger())
 
 			// Create request

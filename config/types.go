@@ -29,7 +29,7 @@ type (
 		Temporal TemporalClientConfig
 		Host     string
 		Port     int
-		APIKey   string
+		APIToken string
 	}
 
 	WorkerConfig struct {

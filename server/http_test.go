@@ -18,9 +18,9 @@ import (
 
 func TestHTTPServer_RegisterRoutes(t *testing.T) {
 	cfg := config.ServerConfig{
-		Host:   "localhost",
-		Port:   8080,
-		APIKey: "test-api-key",
+		Host:     "localhost",
+		Port:     8080,
+		APIToken: "test-api-key",
 		Temporal: config.TemporalClientConfig{
 			Address:   "localhost:7233",
 			Namespace: "test-namespace",
@@ -42,9 +42,9 @@ func TestHTTPServer_RegisterRoutes(t *testing.T) {
 
 func TestHTTPServer_HealthEndpoint(t *testing.T) {
 	cfg := config.ServerConfig{
-		Host:   "localhost",
-		Port:   8080,
-		APIKey: "test-api-key",
+		Host:     "localhost",
+		Port:     8080,
+		APIToken: "test-api-key",
 		Temporal: config.TemporalClientConfig{
 			Address:   "localhost:7233",
 			Namespace: "test-namespace",
@@ -103,9 +103,9 @@ func TestHTTPServer_HealthEndpoint(t *testing.T) {
 
 func TestHTTPServer_StartStop(t *testing.T) {
 	cfg := config.ServerConfig{
-		Host:   "localhost",
-		Port:   0,
-		APIKey: "test-api-key",
+		Host:     "localhost",
+		Port:     0,
+		APIToken: "test-api-key",
 		Temporal: config.TemporalClientConfig{
 			Address:   "localhost:7233",
 			Namespace: "test-namespace",
