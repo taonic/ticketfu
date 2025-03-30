@@ -12,7 +12,7 @@ services:
     sync: false
   - key: TEMPORAL_API_KEY
     sync: false
-  - key: API_KEY
+  - key: SERVER_API_TOKEN
     sync: false
   region: oregon
   buildCommand: go build -ldflags '-s -w' -o ticketfu cmd/ticketfu/main.go

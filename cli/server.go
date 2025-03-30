@@ -34,9 +34,9 @@ var serverFlags = append(append([]cli.Flag{
 	},
 	&cli.StringFlag{
 		Name:     FlagAPIKey,
-		Aliases:  []string{"k"},
-		EnvVars:  []string{"API_KEY"},
-		Usage:    "API key for authenticating requests",
+		Aliases:  []string{"t"},
+		EnvVars:  []string{"SERVER_API_TOKEN"},
+		Usage:    "Server API token for authenticating Zendesk webhook requests",
 		Required: true,
 	},
 }, temporalFlags...), commonFlags...)
