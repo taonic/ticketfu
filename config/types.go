@@ -16,10 +16,9 @@ type (
 	}
 
 	AIConfig struct {
-		OpenAIAPIKey string
-		OpenAIModel  string
-		GeminiAPIKey string
-		GeminiModel  string
+		LLMProvider string
+		LLMModel    string
+		LLMAPIKey   string
 
 		TicketSummaryPrompt string
 		OrgSummaryPrompt    string
@@ -33,10 +32,6 @@ type (
 	}
 
 	WorkerConfig struct {
-		Temporal  TemporalClientConfig
-		Zendesk   ZendeskConfig
-		OpenAI    AIConfig
 		QueueName string
-		Threads   int
 	}
 )

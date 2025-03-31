@@ -10,6 +10,12 @@ import (
 	"github.com/tmc/langchaingo/llms/googleai"
 	"github.com/tmc/langchaingo/llms/openai"
 	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/common/log/tag"
+)
+
+const (
+	OpenAI   = "openai"
+	GoogleAI = "googleai"
 )
 
 type genAI struct {
@@ -24,31 +30,32 @@ type API interface {
 }
 
 func NewAPI(logger log.Logger, config config.AIConfig) (API, error) {
+	if config.LLMAPIKey == "" {
+		return nil, fmt.Errorf("llm-api-key is not provided")
+	}
+
 	ctx := context.Background()
+
+	var model llms.Model
+	var err error
+	switch config.LLMProvider {
+	case OpenAI:
+		model, err = openai.New(openai.WithToken(config.LLMAPIKey), openai.WithModel(config.LLMModel))
+	case GoogleAI:
+		model, err = googleai.New(ctx, googleai.WithAPIKey(config.LLMAPIKey), googleai.WithDefaultModel(config.LLMModel))
+	default:
+		return nil, fmt.Errorf("unknown LLM provider: %s", config.LLMModel)
+	}
+	if model == nil || err != nil {
+		return nil, fmt.Errorf("failed to initialize LLM for provider: %s %w", model, err)
+	}
+
+	logger.Info("Configured LLM", tag.Value(config.LLMModel))
+
 	genAI := genAI{
 		logger: logger,
 		Config: config,
-	}
-
-	// configure at least one model based on the provided API key
-	if config.OpenAIAPIKey != "" {
-		model, err := openai.New(openai.WithToken(config.OpenAIAPIKey), openai.WithModel(config.OpenAIModel))
-		if err != nil {
-			return nil, err
-		}
-		genAI.model = model
-		logger.Debug("Configured OpenAI model.")
-	} else if config.GeminiAPIKey != "" {
-		model, err := googleai.New(ctx, googleai.WithAPIKey(config.GeminiAPIKey), googleai.WithDefaultModel(config.GeminiModel))
-		if err != nil {
-			return nil, err
-		}
-		genAI.model = model
-		logger.Debug("Configured Gemini model.")
-	}
-
-	if genAI.model == nil {
-		return nil, fmt.Errorf("One of the OpenAPI or Gemini API key should be provided")
+		model:  model,
 	}
 
 	return &genAI, nil

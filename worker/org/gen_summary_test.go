@@ -55,7 +55,7 @@ func TestActivity_GenOrgSummary(t *testing.T) {
 			organization: createTestOrganization(),
 			setupMock: func(m *MockGeminiAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:      "gemini-2.0-flash",
+					LLMModel:         "gemini-2.0-flash",
 					OrgSummaryPrompt: "Analyze organization tickets",
 				})
 
@@ -73,7 +73,7 @@ func TestActivity_GenOrgSummary(t *testing.T) {
 			organization: createTestOrganization(),
 			setupMock: func(m *MockGeminiAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:      "gemini-2.0-flash",
+					LLMModel:         "gemini-2.0-flash",
 					OrgSummaryPrompt: "Analyze organization tickets",
 				})
 
@@ -89,7 +89,7 @@ func TestActivity_GenOrgSummary(t *testing.T) {
 			organization: createTestOrganization(),
 			setupMock: func(m *MockGeminiAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:      "gemini-2.0-flash",
+					LLMModel:         "gemini-2.0-flash",
 					OrgSummaryPrompt: "Analyze organization tickets",
 				})
 
@@ -107,7 +107,7 @@ func TestActivity_GenOrgSummary(t *testing.T) {
 			organization: Organization{ID: 123, Name: "Test Organization"},
 			setupMock: func(m *MockGeminiAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:      "gemini-2.0-flash",
+					LLMModel:         "gemini-2.0-flash",
 					OrgSummaryPrompt: "Analyze organization tickets",
 				})
 

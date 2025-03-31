@@ -12,17 +12,17 @@ import (
 	"github.com/taonic/ticketfu/config"
 )
 
-// MockGeminiAPI mocks the gemini.API
-type MockGeminiAPI struct {
+// MockGenAIAPI mocks the gemini.API
+type MockGenAIAPI struct {
 	mock.Mock
 }
 
-func (m *MockGeminiAPI) GenerateContent(ctx context.Context, instruction, content string) (string, error) {
+func (m *MockGenAIAPI) GenerateContent(ctx context.Context, instruction, content string) (string, error) {
 	args := m.Called(ctx, instruction, content)
 	return args.Get(0).(string), args.Error(1)
 }
 
-func (m *MockGeminiAPI) GetConfig() config.AIConfig {
+func (m *MockGenAIAPI) GetConfig() config.AIConfig {
 	args := m.Called()
 	return args.Get(0).(config.AIConfig)
 }
@@ -50,16 +50,16 @@ func TestActivity_GenSummary(t *testing.T) {
 	testCases := []struct {
 		name           string
 		ticket         Ticket
-		setupMock      func(*MockGeminiAPI)
+		setupMock      func(*MockGenAIAPI)
 		expectedOutput string
 		expectedError  string
 	}{
 		{
 			name:   "Successful Summary Generation",
 			ticket: createTestTicket(),
-			setupMock: func(m *MockGeminiAPI) {
+			setupMock: func(m *MockGenAIAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:         "gemini-2.0-flash",
+					LLMModel:            "gemini-2.0-flash",
 					TicketSummaryPrompt: "test",
 				})
 
@@ -75,9 +75,9 @@ func TestActivity_GenSummary(t *testing.T) {
 		{
 			name:   "Generation API Error",
 			ticket: createTestTicket(),
-			setupMock: func(m *MockGeminiAPI) {
+			setupMock: func(m *MockGenAIAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:         "gemini-2.0-flash",
+					LLMModel:            "gemini-2.0-flash",
 					TicketSummaryPrompt: "test",
 				})
 
@@ -91,9 +91,9 @@ func TestActivity_GenSummary(t *testing.T) {
 		{
 			name:   "Empty Response",
 			ticket: createTestTicket(),
-			setupMock: func(m *MockGeminiAPI) {
+			setupMock: func(m *MockGenAIAPI) {
 				m.On("GetConfig").Return(config.AIConfig{
-					GeminiModel:         "gemini-2.0-flash",
+					LLMModel:            "gemini-2.0-flash",
 					TicketSummaryPrompt: "test",
 				})
 
@@ -113,7 +113,7 @@ func TestActivity_GenSummary(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Setup
 			ctx := context.Background()
-			mockAPI := new(MockGeminiAPI)
+			mockAPI := new(MockGenAIAPI)
 			tc.setupMock(mockAPI)
 
 			activity := &Activity{

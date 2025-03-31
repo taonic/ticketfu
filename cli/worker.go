@@ -75,10 +75,8 @@ func startWorker(c *cli.Context) error {
 
 // NewWorkerConfig creates a WorkerConfig from CLI context
 func NewWorkerConfig(ctx *cli.Context) (config.WorkerConfig, error) {
-	// Build config from CLI flags
 	return config.WorkerConfig{
 		QueueName: ctx.String(FlagWorkerQueue),
-		Threads:   ctx.Int(FlagWorkerThreads),
 	}, nil
 }
 
@@ -104,10 +102,9 @@ func NewWorkerApp(ctx *cli.Context) (*fx.App, error) {
 	}
 
 	aiConfig := config.AIConfig{
-		OpenAIAPIKey:        ctx.String(FlagOpenAIAPIKey),
-		OpenAIModel:         ctx.String(FlagOpenAIModel),
-		GeminiAPIKey:        ctx.String(FlagGeminiAPIKey),
-		GeminiModel:         ctx.String(FlagGeminiModel),
+		LLMProvider:         ctx.String(FlagLLMProvider),
+		LLMModel:            ctx.String(FlagLLMModel),
+		LLMAPIKey:           ctx.String(FlagLLMAPIKey),
 		TicketSummaryPrompt: ctx.String(FlagTicketSummaryPrompt),
 		OrgSummaryPrompt:    ctx.String(FlagOrgSummaryPrompt),
 	}

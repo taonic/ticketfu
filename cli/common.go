@@ -22,10 +22,9 @@ const (
 	FlagZendeskToken     = "zendesk-token"
 
 	// AI-specific flags
-	FlagOpenAIAPIKey        = "openai-api-key"
-	FlagOpenAIModel         = "openai-model"
-	FlagGeminiAPIKey        = "gemini-api-key"
-	FlagGeminiModel         = "gemini-model"
+	FlagLLMProvider         = "llm-provider"
+	FlagLLMModel            = "llm-model"
+	FlagLLMAPIKey           = "llm-api-key"
 	FlagTicketSummaryPrompt = "ticket-summary-prompt"
 	FlagOrgSummaryPrompt    = "org-summary-prompt"
 )
@@ -86,30 +85,24 @@ var zendeskFlags = []cli.Flag{
 // AI flags shared across commands
 var aiFlags = []cli.Flag{
 	&cli.StringFlag{
-		Name:     FlagOpenAIAPIKey,
-		EnvVars:  []string{"OPENAI_API_KEY"},
-		Usage:    "OpenAI API Key",
-		Required: true,
+		Name:     FlagLLMProvider,
+		EnvVars:  []string{"LLM_PROVIDER"},
+		Usage:    "LLM provider's name",
+		Required: false,
+		Value:    "openai",
 	},
 	&cli.StringFlag{
-		Name:     FlagOpenAIModel,
-		EnvVars:  []string{"OPENAI_MODEL"},
-		Usage:    "OpenAI's LLM Model",
+		Name:     FlagLLMModel,
+		EnvVars:  []string{"LLM_MODEL"},
+		Usage:    "LLM's model name",
 		Required: false,
 		Value:    "gpt-4o-mini",
 	},
 	&cli.StringFlag{
-		Name:     FlagGeminiAPIKey,
-		EnvVars:  []string{"GEMINI_API_KEY"},
-		Usage:    "Gemini API Key",
-		Required: false,
-	},
-	&cli.StringFlag{
-		Name:     FlagGeminiModel,
-		EnvVars:  []string{"GEMINI_MODEL"},
-		Usage:    "Gemini's LLM Model",
-		Required: false,
-		Value:    "gemini-2.0-flash",
+		Name:     FlagLLMAPIKey,
+		EnvVars:  []string{"LLM_API_KEY"},
+		Usage:    "LLM's API Key",
+		Required: true,
 	},
 	&cli.StringFlag{
 		Name:     FlagTicketSummaryPrompt,
