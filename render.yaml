@@ -1,4 +1,3 @@
-# Exported from Render on 2025-03-25T07:08:04Z
 services:
 - type: web
   name: ticketfu
@@ -6,6 +5,8 @@ services:
   repo: https://github.com/taonic/ticketfu
   plan: free
   envVars:
+  - key: LOG_LEVEL
+    value: debug
   - key: TEMPORAL_NAMESPACE
     sync: false
   - key: TEMPORAL_ADDRESS
@@ -13,9 +14,21 @@ services:
   - key: TEMPORAL_API_KEY
     sync: false
   - key: SERVER_API_TOKEN
+    generateValue: true
+  - key: ZENDESK_SUBDOMAIN
+    sync: false
+  - key: ZENDESK_EMAIL
+    sync: false
+  - key: ZENDESK_TOKEN
+    sync: false
+  - key: LLM_PROVIDER
+    sync: false
+  - key: LLM_MODEL
+    sync: false
+  - key: LLM_API_KEY
     sync: false
   region: oregon
   buildCommand: go build -ldflags '-s -w' -o ticketfu cmd/ticketfu/main.go
-  startCommand: ./ticketfu server start
+  startCommand: npx concurrently "./ticketfu worker start"  "./ticketfu server start"
   healthCheckPath: /health
 version: "1"
