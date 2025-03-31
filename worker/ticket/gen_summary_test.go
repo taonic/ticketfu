@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/taonic/ticketfu/config"
-	"google.golang.org/genai"
 )
 
 // MockGeminiAPI mocks the gemini.API
@@ -18,9 +17,9 @@ type MockGeminiAPI struct {
 	mock.Mock
 }
 
-func (m *MockGeminiAPI) GenerateContent(ctx context.Context, model string, contents []*genai.Content, config *genai.GenerateContentConfig) (*genai.GenerateContentResponse, error) {
-	args := m.Called(ctx, model, contents, config)
-	return args.Get(0).(*genai.GenerateContentResponse), args.Error(1)
+func (m *MockGeminiAPI) GenerateContent(ctx context.Context, instruction, content string) (string, error) {
+	args := m.Called(ctx, instruction, content)
+	return args.Get(0).(string), args.Error(1)
 }
 
 func (m *MockGeminiAPI) GetConfig() config.AIConfig {
@@ -64,19 +63,10 @@ func TestActivity_GenSummary(t *testing.T) {
 					TicketSummaryPrompt: "test",
 				})
 
-				response := &genai.GenerateContentResponse{
-					Candidates: []*genai.Candidate{{
-						Content: &genai.Content{
-							Parts: []*genai.Part{
-								&genai.Part{Text: "This is a generated summary"},
-							},
-						},
-					}},
-				}
+				response := "This is a generated summary"
 
 				m.On("GenerateContent",
 					mock.Anything,
-					"gemini-2.0-flash",
 					mock.Anything,
 					mock.Anything).Return(response, nil)
 			},
@@ -93,9 +83,8 @@ func TestActivity_GenSummary(t *testing.T) {
 
 				m.On("GenerateContent",
 					mock.Anything,
-					"gemini-2.0-flash",
 					mock.Anything,
-					mock.Anything).Return(&genai.GenerateContentResponse{}, errors.New("API failure"))
+					mock.Anything).Return("", errors.New("API failure"))
 			},
 			expectedError: "failed to generate",
 		},
@@ -108,17 +97,10 @@ func TestActivity_GenSummary(t *testing.T) {
 					TicketSummaryPrompt: "test",
 				})
 
-				emptyResponse := &genai.GenerateContentResponse{
-					Candidates: []*genai.Candidate{{
-						Content: &genai.Content{
-							Parts: []*genai.Part{&genai.Part{Text: ""}},
-						},
-					}},
-				}
+				emptyResponse := ""
 
 				m.On("GenerateContent",
 					mock.Anything,
-					"gemini-2.0-flash",
 					mock.Anything,
 					mock.Anything).Return(emptyResponse, nil)
 			},
