@@ -7,6 +7,7 @@ import (
 
 	"github.com/taonic/ticketfu/config"
 	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/anthropic"
 	"github.com/tmc/langchaingo/llms/googleai"
 	"github.com/tmc/langchaingo/llms/openai"
 	"go.temporal.io/server/common/log"
@@ -14,8 +15,9 @@ import (
 )
 
 const (
-	OpenAI   = "openai"
-	GoogleAI = "googleai"
+	OpenAI    = "openai"
+	GoogleAI  = "googleai"
+	Anthropic = "anthropic"
 )
 
 type genAI struct {
@@ -33,7 +35,6 @@ func NewAPI(logger log.Logger, config config.AIConfig) (API, error) {
 	if config.LLMAPIKey == "" {
 		return nil, fmt.Errorf("llm-api-key is not provided")
 	}
-
 	ctx := context.Background()
 
 	var model llms.Model
@@ -43,10 +44,12 @@ func NewAPI(logger log.Logger, config config.AIConfig) (API, error) {
 		model, err = openai.New(openai.WithToken(config.LLMAPIKey), openai.WithModel(config.LLMModel))
 	case GoogleAI:
 		model, err = googleai.New(ctx, googleai.WithAPIKey(config.LLMAPIKey), googleai.WithDefaultModel(config.LLMModel))
+	case Anthropic:
+		model, err = anthropic.New(anthropic.WithToken(config.LLMAPIKey), anthropic.WithModel(config.LLMModel))
 	default:
 		return nil, fmt.Errorf("unknown LLM provider: %s", config.LLMModel)
 	}
-	if model == nil || err != nil {
+	if err != nil {
 		return nil, fmt.Errorf("failed to initialize LLM for provider: %s %w", model, err)
 	}
 
