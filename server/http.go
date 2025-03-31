@@ -2,11 +2,11 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/taonic/ticketfu/config"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/server/common/log"
@@ -47,7 +47,7 @@ func NewHTTPServer(config config.ServerConfig, temporalClient client.Client, log
 // Start begins listening and serving HTTP requests
 func (h *HTTPServer) Start(ctx context.Context) error {
 	// Register routes
-	h.registerRoutes()
+	h.server.Handler = h.registerRoutes()
 
 	// Start the server in a goroutine
 	go func() {
@@ -81,58 +81,16 @@ func (h *HTTPServer) Stop(ctx context.Context) error {
 }
 
 // registerRoutes sets up all the HTTP routes for the server
-func (h *HTTPServer) registerRoutes() {
+func (h *HTTPServer) registerRoutes() *mux.Router {
+	r := mux.NewRouter()
 	// Health check endpoint
-	h.mux.HandleFunc("GET /health", h.handleHealthCheck)
+	r.HandleFunc("/health", h.handleHealthCheck).Methods("GET")
 
 	// API routes
 	verifyAPIKey := APIKeyMiddleware(h.config.APIToken)
-	h.mux.HandleFunc("GET  /api/v1/ticket/summary", verifyAPIKey(h.handleGetTicket))
-	h.mux.HandleFunc("POST /api/v1/ticket", verifyAPIKey(h.handleUpdateTicket))
-	h.mux.HandleFunc("GET /api/v1/organization/summary", verifyAPIKey(h.handleGetOrganization))
-}
+	r.HandleFunc("/api/v1/ticket/{ticketId}/summary", verifyAPIKey(h.handleGetTicket)).Methods("GET")
+	r.HandleFunc("/api/v1/ticket", verifyAPIKey(h.handleUpdateTicket)).Methods("POST")
+	r.HandleFunc("/api/v1/organization/{orgId}/summary", verifyAPIKey(h.handleGetOrganization)).Methods("GET")
 
-func (h *HTTPServer) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-	defer cancel()
-
-	response := HealthResponse{
-		Status:     "OK",
-		TemporalOK: true,
-	}
-
-	// Check Temporal service health
-	if h.temporalClient != nil {
-		if _, err := h.temporalClient.CheckHealth(ctx, nil); err != nil {
-			response.Status = "Degraded"
-			response.TemporalOK = false
-			response.TemporalMsg = err.Error()
-		}
-	} else {
-		response.Status = "Degraded"
-		response.TemporalOK = false
-		response.TemporalMsg = "Temporal client not initialized"
-	}
-
-	// Return JSON response
-	w.Header().Set("Content-Type", "application/json")
-	if response.Status != "OK" {
-		w.WriteHeader(http.StatusServiceUnavailable)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
-
-	json.NewEncoder(w).Encode(response)
-}
-
-func (h *HTTPServer) handleGetTicket(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement fetching a specific ticket
-	id := r.PathValue("id")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf(`{"id":"%s","status":"open"}`, id)))
-}
-
-func (h *HTTPServer) handleGetOrganization(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement get organization
-	w.WriteHeader(http.StatusNoContent)
+	return r
 }

@@ -1,0 +1,35 @@
+{
+  "name": "Ticketfu",
+  "author": {
+    "name": "Tao Guo",
+    "email": "taoguo1@gmail.com"
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "location": {
+    "support": {
+      "ticket_sidebar": {
+        "url": "assets/ticket.html",
+        "flexible": true
+      },
+      "organization_sidebar": {
+        "url": "assets/org.html",
+        "flexible": true
+      }
+    }
+  },
+  "version": "1.0.0",
+  "frameworkVersion": "2.0",
+  "domainWhitelist": [],
+  "parameters": [
+    {
+      "name": "api_token",
+      "type": "text",
+      "secure": true
+    },
+    {
+      "name": "server_url",
+      "type": "text"
+    }
+  ]
+}

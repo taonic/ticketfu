@@ -5,6 +5,7 @@ go 1.23.2
 toolchain go1.23.7
 
 require (
+	github.com/gorilla/mux v1.8.1
 	github.com/nukosuke/go-zendesk v0.18.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tmc/langchaingo v0.1.13
@@ -12,7 +13,6 @@ require (
 	go.temporal.io/sdk v1.32.1
 	go.temporal.io/server v1.27.1
 	go.uber.org/fx v1.23.0
-	google.golang.org/genai v0.6.0
 )
 
 require (
@@ -35,13 +35,11 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/generative-ai-go v0.15.1 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
 	github.com/nexus-rpc/sdk-go v0.2.0 // indirect

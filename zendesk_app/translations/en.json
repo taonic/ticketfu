@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "Ticket Summarizer",
+    "short_description": "Use OpenAI's ChatGPT to summarize Support tickets.",
+    "long_description": "Use OpenAI's ChatGPT to summarize Support tickets.",
+    "installation_instructions": "Add your OpenAI API key and click install.",
+    "parameters": {
+      "openAiApiToken" : {
+        "label": "OpenAI API key"
+      }
+    }
+  }
+}

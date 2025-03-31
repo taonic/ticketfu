@@ -22,7 +22,7 @@ type UpdateOrganizationSignal struct {
 }
 
 func (a *Activity) SignalOrganization(ctx context.Context, input SignalOrganizationInput) error {
-	workflowID := fmt.Sprintf(org.OrganizationWorkflowIDTemplate, input.OrganizationID)
+	workflowID := fmt.Sprintf(org.OrganizationWorkflowIDTemplate, fmt.Sprintf("%d", input.OrganizationID))
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:        workflowID,

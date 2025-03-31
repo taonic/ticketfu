@@ -81,11 +81,11 @@ func (s *TicketWorkflowTestSuite) TestBasicTicketWorkflow() {
 	s.True(s.env.IsWorkflowCompleted())
 
 	// Verify the query handler returns the expected summary
-	var summary string
+	var output QueryTicketOutput
 	future, err := s.env.QueryWorkflow(QueryTicketSummary, nil)
-	future.Get(&summary)
+	future.Get(&output)
 	s.NoError(err)
-	s.Equal("Test ticket summary", summary)
+	s.Equal("Test ticket summary", output.Summary)
 }
 
 func (s *TicketWorkflowTestSuite) TestTicketWithoutOrganization() {
@@ -218,11 +218,11 @@ func (s *TicketWorkflowTestSuite) TestMultipleUpdates() {
 	s.ErrorAs(s.env.GetWorkflowError(), &canceledErr)
 
 	// Check the final state via query
-	var summary string
+	var output QueryTicketOutput
 	future, err := s.env.QueryWorkflow(QueryTicketSummary, nil)
-	future.Get(&summary)
+	future.Get(&output)
 	s.NoError(err)
-	s.Equal("Updated summary", summary)
+	s.Equal("Updated summary", output.Summary)
 }
 
 func TestTicketWorkflowSuite(t *testing.T) {

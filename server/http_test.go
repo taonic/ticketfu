@@ -31,11 +31,11 @@ func TestHTTPServer_RegisterRoutes(t *testing.T) {
 	mockClient.On("CheckHealth", mock.Anything, mock.Anything).Return(nil, nil)
 
 	server := NewHTTPServer(cfg, mockClient, log.NewTestLogger())
-	server.registerRoutes()
+	r := server.registerRoutes()
 
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
-	server.mux.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -77,11 +77,11 @@ func TestHTTPServer_HealthEndpoint(t *testing.T) {
 			mockClient.On("CheckHealth", mock.Anything, mock.Anything).Return(nil, tc.checkHealthErr)
 
 			server := NewHTTPServer(cfg, mockClient, log.NewTestLogger())
-			server.registerRoutes()
+			r := server.registerRoutes()
 
 			req := httptest.NewRequest("GET", "/health", nil)
 			w := httptest.NewRecorder()
-			server.mux.ServeHTTP(w, req)
+			r.ServeHTTP(w, req)
 
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			var response HealthResponse

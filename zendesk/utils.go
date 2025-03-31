@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// ParseZendeskURL extracts the subdomain and ticket_id from a Zendesk ticket URL
-func ParseZendeskURL(zendeskURL string) (string, string, error) {
+// ParseTicketURL extracts the subdomain and ticket_id from a Zendesk ticket URL
+func ParseTicketURL(zendeskURL string) (string, string, error) {
 	if !strings.HasPrefix(zendeskURL, "http") {
 		zendeskURL = "http://" + zendeskURL
 	}

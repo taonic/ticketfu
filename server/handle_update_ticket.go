@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,37 +11,42 @@ import (
 	"github.com/taonic/ticketfu/worker/ticket"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/server/common/log/tag"
 )
 
-type response struct {
-	Message    string `json:"message"`
-	WorkflowID string `json:"workflow_id"`
-}
+type (
+	UpdateTicketRequest struct {
+		TicketURL      string `json:"ticket_url"`
+		OrganizationID string `json:"organization_id"`
+		RequesterID    string `json:"requester_id"`
+		RequesterEmail string `json:"requester_email"`
+	}
+
+	response struct {
+		Message    string `json:"message"`
+		WorkflowID string `json:"workflow_id"`
+	}
+)
 
 func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) {
-	// Decode the JSON payload
 	var req UpdateTicketRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
 		return
 	}
 
-	subdomain, ticketID, err := zendesk.ParseZendeskURL(req.TicketURL)
+	_, ticketID, err := zendesk.ParseTicketURL(req.TicketURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Printf("Received query for: subdomain: %v ticket_id: %v", subdomain, ticketID)
+	h.logger.Debug("Received ticket update", tag.Value(ticketID))
 
 	// Create a unique workflow ID
 	workflowID := fmt.Sprintf(ticket.TicketWorkflowIDTemplate, ticketID)
 
-	// Create workflow input with SummarizeTicketInput struct
-	input := ticket.UpsertTicketInput{
-		TicketID: ticketID,
-	}
+	input := ticket.UpsertTicketInput{TicketID: ticketID}
 
-	// Create context with timeout
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 

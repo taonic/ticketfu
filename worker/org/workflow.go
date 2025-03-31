@@ -12,7 +12,7 @@ import (
 const (
 	UpsertOrganizationSignal       = "upsert-organization-signal"
 	QueryOrganizationSummary       = "query-organization-summary"
-	OrganizationWorkflowIDTemplate = "organization-workflow-%d" // e.g. org-workflow-123
+	OrganizationWorkflowIDTemplate = "organization-workflow-%s" // e.g. organization-workflow-123
 	MaxTicketSummaries             = 500
 )
 
@@ -20,36 +20,41 @@ var (
 	updatesBeforeContinueAsNew = 500
 )
 
-type Organization struct {
-	ID      int64
-	Name    string
-	Notes   string
-	Details string
+type (
+	Organization struct {
+		ID      int64
+		Name    string
+		Notes   string
+		Details string
 
-	TicketSummaries map[int64]string
+		TicketSummaries map[int64]string
 
-	// LLM generated summary
-	Summary string
-}
+		// LLM generated summary
+		Summary string
+	}
 
-// UpsertOrganizationInput is the input for the organization workflow
-type UpsertOrganizationInput struct {
-	OrganizationID int64
-	TicketID       int64
-	TicketSummary  string
-}
+	UpsertOrganizationInput struct {
+		OrganizationID int64
+		TicketID       int64
+		TicketSummary  string
+	}
 
-type organizationWorkflow struct {
-	workflow.Context
-	logger                     sdklog.Logger
-	signalCh                   workflow.ReceiveChannel
-	updatesBeforeContinueAsNew int
-	activityOptions            workflow.ActivityOptions
-	activity                   Activity
+	QueryOrganizationOutput struct {
+		Summary string `json:"summary"`
+	}
 
-	// Organization state
-	organization Organization
-}
+	organizationWorkflow struct {
+		workflow.Context
+		logger                     sdklog.Logger
+		signalCh                   workflow.ReceiveChannel
+		updatesBeforeContinueAsNew int
+		activityOptions            workflow.ActivityOptions
+		activity                   Activity
+
+		// Organization state
+		organization Organization
+	}
+)
 
 func newOrganizationWorkflow(ctx workflow.Context, organization Organization) *organizationWorkflow {
 	return &organizationWorkflow{
@@ -166,6 +171,6 @@ func (s *organizationWorkflow) processPendingUpsert(pendingUpsert *UpsertOrganiz
 	}
 }
 
-func (s *organizationWorkflow) handleQuerySummary() (string, error) {
-	return s.organization.Summary, nil
+func (s *organizationWorkflow) handleQuerySummary() (QueryOrganizationOutput, error) {
+	return QueryOrganizationOutput{Summary: s.organization.Summary}, nil
 }

@@ -34,21 +34,26 @@ type Ticket struct {
 	Summary string
 }
 
-// UpsertTicketInput is the input for the summarize ticket workflow
-type UpsertTicketInput struct {
-	TicketID string
-}
+type (
+	UpsertTicketInput struct {
+		TicketID string
+	}
 
-type ticketWorkflow struct {
-	workflow.Context
-	signalCh                   workflow.ReceiveChannel
-	updatesBeforeContinueAsNew int
-	activityOptions            workflow.ActivityOptions
-	activity                   Activity
+	QueryTicketOutput struct {
+		Summary string `json:"summary"`
+	}
 
-	// Ticket state
-	ticket Ticket
-}
+	ticketWorkflow struct {
+		workflow.Context
+		signalCh                   workflow.ReceiveChannel
+		updatesBeforeContinueAsNew int
+		activityOptions            workflow.ActivityOptions
+		activity                   Activity
+
+		// Ticket state
+		ticket Ticket
+	}
+)
 
 func newTicketWorkflow(ctx workflow.Context, ticket Ticket) *ticketWorkflow {
 	return &ticketWorkflow{
@@ -161,6 +166,6 @@ func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) 
 	}
 }
 
-func (s *ticketWorkflow) handleQuerySummary() (string, error) {
-	return s.ticket.Summary, nil
+func (s *ticketWorkflow) handleQuerySummary() (QueryTicketOutput, error) {
+	return QueryTicketOutput{Summary: s.ticket.Summary}, nil
 }

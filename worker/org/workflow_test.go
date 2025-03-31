@@ -69,11 +69,11 @@ func (s *OrgWorkflowTestSuite) TestSuccessfulInitialFetch() {
 	s.ErrorAs(s.env.GetWorkflowError(), &canceledErr)
 
 	// Query the workflow state
-	var summary string
+	var output QueryOrganizationOutput
 	future, err := s.env.QueryWorkflow(QueryOrganizationSummary, nil)
-	future.Get(&summary)
+	future.Get(&output)
 	s.NoError(err)
-	s.Equal("Generated organization summary", summary)
+	s.Equal("Generated organization summary", output.Summary)
 }
 
 func (s *OrgWorkflowTestSuite) TestDuplicateTicketSummaries() {
@@ -124,11 +124,11 @@ func (s *OrgWorkflowTestSuite) TestDuplicateTicketSummaries() {
 	s.ErrorAs(s.env.GetWorkflowError(), &canceledErr)
 
 	// Query the workflow state
-	var summary string
+	var output QueryOrganizationOutput
 	future, err := s.env.QueryWorkflow(QueryOrganizationSummary, nil)
-	future.Get(&summary)
+	future.Get(&output)
 	s.NoError(err)
-	s.Equal("Updated org summary after ticket change", summary)
+	s.Equal("Updated org summary after ticket change", output.Summary)
 }
 
 func (s *OrgWorkflowTestSuite) TestTicketTruncation() {
@@ -223,11 +223,11 @@ func (s *OrgWorkflowTestSuite) TestConcurrentSignals() {
 	s.ErrorAs(s.env.GetWorkflowError(), &canceledErr)
 
 	// Query final state
-	var summary string
+	var output QueryOrganizationOutput
 	future, err := s.env.QueryWorkflow(QueryOrganizationSummary, nil)
-	future.Get(&summary)
+	future.Get(&output)
 	s.NoError(err)
-	s.Equal("Summary after concurrent signals", summary)
+	s.Equal("Summary after concurrent signals", output.Summary)
 }
 
 func TestOrgWorkflowSuite(t *testing.T) {
