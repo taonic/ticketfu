@@ -14,8 +14,7 @@ import (
 
 const (
 	// Worker-specific flags
-	FlagWorkerQueue   = "queue"
-	FlagWorkerThreads = "threads"
+	FlagWorkerQueue = "queue"
 )
 
 // Worker-specific flags
@@ -25,12 +24,6 @@ var workerFlags = append(append(append(append([]cli.Flag{
 		EnvVars: []string{"WORKER_QUEUE"},
 		Usage:   "worker queue name",
 		Value:   "default",
-	},
-	&cli.IntFlag{
-		Name:    FlagWorkerThreads,
-		EnvVars: []string{"WORKER_THREADS"},
-		Usage:   "number of worker threads",
-		Value:   4,
 	},
 }, temporalFlags...), commonFlags...), zendeskFlags...), aiFlags...)
 
