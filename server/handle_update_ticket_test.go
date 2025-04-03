@@ -33,10 +33,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 		{
 			name: "Success",
 			requestBody: UpdateTicketRequest{
-				TicketURL:      "company.zendesk.com/tickets/12345",
-				OrganizationID: "org123",
-				RequesterID:    "user123",
-				RequesterEmail: "user@example.com",
+				TicketURL: "company.zendesk.com/tickets/12345",
 			},
 			setupMock: func(m *mocks.Client) {
 				workflowID := "ticket-workflow-12345"
@@ -61,10 +58,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 		{
 			name: "Invalid URL",
 			requestBody: UpdateTicketRequest{
-				TicketURL:      "invalid_url",
-				OrganizationID: "org123",
-				RequesterID:    "user123",
-				RequesterEmail: "user@example.com",
+				TicketURL: "invalid_url",
 			},
 			setupMock: func(m *mocks.Client) {
 				// No mock setup needed
@@ -84,10 +78,7 @@ func TestHandleUpdateTicket(t *testing.T) {
 		{
 			name: "Temporal Service Error",
 			requestBody: UpdateTicketRequest{
-				TicketURL:      "company.zendesk.com/tickets/12345",
-				OrganizationID: "org123",
-				RequesterID:    "user123",
-				RequesterEmail: "user@example.com",
+				TicketURL: "company.zendesk.com/tickets/12345",
 			},
 			setupMock: func(m *mocks.Client) {
 				m.On("SignalWithStartWorkflow",

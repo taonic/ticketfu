@@ -16,10 +16,7 @@ import (
 
 type (
 	UpdateTicketRequest struct {
-		TicketURL      string `json:"ticket_url"`
-		OrganizationID string `json:"organization_id"`
-		RequesterID    string `json:"requester_id"`
-		RequesterEmail string `json:"requester_email"`
+		TicketURL string `json:"ticket_url"`
 	}
 
 	response struct {
