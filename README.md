@@ -3,7 +3,9 @@
 [![Go Tests](https://github.com/taonic/ticketfu/workflows/Go%20Tests/badge.svg)](https://github.com/taonic/ticketfu/actions)
 [![codecov](https://codecov.io/gh/taonic/ticketfu/branch/main/graph/badge.svg)](https://codecov.io/gh/taonic/ticketfu)
 
-TicketFu is an AI-powered support ticket analysis system that integrates with Zendesk to provide enhanced ticket management capabilities. Built on Temporal for reliable, durable workflow execution, it uses modern LLMs (OpenAI, Google Gemini, or Anthropic) to generate ticket summaries and organization-level insights, making it easier for support teams to manage customer issues efficiently while ensuring fault-tolerance and scalability.
+TicketFu is an AI-powered support ticket analysis system that integrates with Zendesk to provide enhanced ticket management capabilities.
+
+Built on Temporal for reliable, durable workflow execution, it uses modern LLMs (OpenAI, Google Gemini, or Anthropic) to generate ticket summaries and organization-level insights, making it easier for support teams to manage customer issues efficiently while ensuring fault-tolerance and scalability.
 
 ## Features
 
@@ -12,9 +14,16 @@ TicketFu is an AI-powered support ticket analysis system that integrates with Ze
 - **Reliable Workflow Processing**: Uses Temporal for durable, reliable background processing
 - **Multiple LLM Support**: Compatible with OpenAI, Google Gemini, and Anthropic models
 
-## Deployment Options
+## Cloud Deployment
 
-### For Cloud Deployment
+### One-Click Deployment on Render
+
+The easiest way to get started in production is with Render's one-click deploy:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/taonic/ticketfu)
+
+<details>
+<summary>Expand to see the prerequisites and setup steps</summary>
 
 #### Prerequisites
 
@@ -33,11 +42,6 @@ TicketFu is an AI-powered support ticket analysis system that integrates with Ze
    - [Google AI (Gemini) API](https://aistudio.google.com/)
    - [Anthropic API](https://console.anthropic.com/signup)
 
-#### One-Click Deployment on Render
-
-The easiest way to get started in production is with Render's one-click deploy:
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/taonic/ticketfu)
 
 #### Render Environment Variables
 
@@ -127,84 +131,7 @@ To automate ticket analysis whenever a new ticket is created or updated, you'll 
        ```
    - Click **Create trigger**
 
-### Local Deployment
-
-For development or testing, you can run TicketFu locally:
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/taonic/ticketfu.git
-   cd ticketfu
-   ```
-
-2. **Set Up Temporal**
-   ```bash
-   # Install Temporal CLI
-   curl -sSf https://temporal.download/cli.sh | sh
-   
-   # Start Temporal Server in dev mode
-   temporal server start-dev
-   ```
-
-3. **Build TicketFu**
-   ```bash
-   go build -o ticketfu cmd/ticketfu/main.go
-   ```
-
-4. **Run the Server**
-   ```bash
-   ./ticketfu server start \
-     --server-api-token YOUR_API_TOKEN \
-     --temporal-address localhost:7233
-   ```
-
-5. **Run the Worker** (in a separate terminal)
-   ```bash
-   ./ticketfu worker start \
-     --zendesk-subdomain your-zendesk \
-     --zendesk-email user@example.com \
-     --zendesk-token YOUR_ZENDESK_TOKEN \
-     --llm-provider openai \
-     --llm-model gpt-4o-mini \
-     --llm-api-key YOUR_LLM_API_KEY \
-     --temporal-address localhost:7233
-   ```
-
-6. **Test the API**
-   ```bash
-   curl -H "X-Ticketfu-Key: YOUR_API_TOKEN" http://localhost:8080/health
-   ```
-
-### Local Zendesk App Development
-
-For testing the Zendesk app locally, you can use the Zendesk CLI:
-
-1. **Install Zendesk CLI**
-   ```bash
-   npm install -g @zendesk/zcli
-   ```
-
-2. **Login to Zendesk**
-   ```bash
-   zcli login
-   ```
-
-3. **Navigate to the Zendesk App Directory**
-   ```bash
-   cd zendesk_app
-   ```
-
-4. **Start the Local App Server**
-   ```bash
-   zcli apps:server
-   ```
-
-5. **Test the App in Zendesk**
-   - Go to your Zendesk Support instance in your browser
-   - Append `?zcli_apps=true` to the URL
-   - The locally running app will now appear in the sidebar
-
-This setup allows you to develop and test changes to the Zendesk app without having to constantly repackage and upload it to your Zendesk instance.
+</details>
 
 ## Architecture
 
@@ -263,6 +190,19 @@ TicketFu uses Temporal for workflow orchestration, implementing the "Entity Work
 - External events trigger operations via signals
 - Queries allow reading the current state without interrupting workflow execution
 
+## API Endpoints
+
+TicketFu exposes the following RESTful API endpoints:
+
+- `GET /health`: Health check endpoint
+- `POST /api/v1/ticket`: Process a new ticket or update an existing one
+- `GET /api/v1/ticket/{ticketId}/summary`: Get a specific ticket's AI-generated summary
+- `GET /api/v1/organization/{orgId}/summary`: Get organization-level insights and analysis
+
+All API requests require the `X-Ticketfu-Key` header with your SERVER_API_TOKEN value. When you install the Zendesk app, you'll configure it to use this same token to authenticate requests to your TicketFu server.
+
+## Running it locally
+
 ## Installation
 
 ```bash
@@ -292,7 +232,8 @@ ticketfu worker start \
   --temporal-address localhost:7233
 ```
 
-## Configuration
+<details>
+<summary>Expand to see more config options</summary>
 
 ### Server Configuration
 
@@ -336,18 +277,12 @@ ticketfu worker start \
 | `--temporal-tls-cert` | `TEMPORAL_TLS_CERT` | Path to Temporal TLS certificate | (optional) |
 | `--temporal-tls-key` | `TEMPORAL_TLS_KEY` | Path to Temporal TLS key | (optional) |
 
-## API Endpoints
+</details>
 
-TicketFu exposes the following RESTful API endpoints:
+## Local Development
 
-- `GET /health`: Health check endpoint
-- `POST /api/v1/ticket`: Process a new ticket or update an existing one
-- `GET /api/v1/ticket/{ticketId}/summary`: Get a specific ticket's AI-generated summary
-- `GET /api/v1/organization/{orgId}/summary`: Get organization-level insights and analysis
-
-All API requests require the `X-Ticketfu-Key` header with your SERVER_API_TOKEN value. When you install the Zendesk app, you'll configure it to use this same token to authenticate requests to your TicketFu server.
-
-## Development
+<details>
+<summary>Expand to see local deployment setup</summary>
 
 ### Prerequisites
 
@@ -355,52 +290,90 @@ All API requests require the `X-Ticketfu-Key` header with your SERVER_API_TOKEN 
 - Temporal server (for workflow orchestration)
 - API key for one of the supported LLM providers
 
+For development or testing, you can run TicketFu locally:
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/taonic/ticketfu.git
+   cd ticketfu
+   ```
+
+2. **Set Up Temporal Locally**
+   ```bash
+   # Install Temporal CLI
+   curl -sSf https://temporal.download/cli.sh | sh
+   
+   # Start Temporal Server in dev mode
+   temporal server start-dev
+   ```
+
+3. **Build TicketFu**
+   ```bash
+   go build -o ticketfu cmd/ticketfu/main.go
+   ```
+
+4. **Run the Server**
+   ```bash
+   ./ticketfu server start \
+     --server-api-token YOUR_API_TOKEN \
+     --temporal-address localhost:7233
+   ```
+
+5. **Run the Worker** (in a separate terminal)
+   ```bash
+   ./ticketfu worker start \
+     --zendesk-subdomain your-zendesk \
+     --zendesk-email user@example.com \
+     --zendesk-token YOUR_ZENDESK_TOKEN \
+     --llm-provider openai \
+     --llm-model gpt-4o-mini \
+     --llm-api-key YOUR_LLM_API_KEY \
+     --temporal-address localhost:7233
+   ```
+
+6. **Test the API**
+   ```bash
+   curl -H "X-Ticketfu-Key: YOUR_API_TOKEN" http://localhost:8080/health
+   ```
+
 ### Running Tests
 
 ```bash
 go test ./...
 ```
 
-### Building From Source
+### Local Zendesk App Development
 
-```bash
-go build -o ticketfu cmd/ticketfu/main.go
-```
+For testing the Zendesk app locally, you can use the Zendesk CLI:
 
-## Temporal Setup
-
-TicketFu requires a Temporal service for reliable workflow execution. There are several options for setting up Temporal:
-
-### Local Development
-
-For local development, you can run Temporal server using Docker:
-
-```bash
-docker run --detach \
-  --network host \
-  --name temporal \
-  temporalio/auto-setup:1.22.4
-```
-
-### Temporal Cloud
-
-For production, consider using [Temporal Cloud](https://temporal.io/cloud):
-
-1. Sign up for Temporal Cloud
-2. Create a namespace
-3. Generate an API key from the Temporal Cloud dashboard
-4. Configure TicketFu with:
-   ```
-   --temporal-address <region>.<cloud_provider>.api.temporal.io:7233 \
-   --temporal-namespace <namespace>.<account_id> \
-   --temporal-api-key <api-key>
+1. **Install Zendesk CLI**
+   ```bash
+   npm install -g @zendesk/zcli
    ```
 
-You can find the exact address format in your Temporal Cloud namespace settings page. For more details, see the [Temporal Cloud documentation](https://docs.temporal.io/cloud/api-keys#namespace-authentication).
+2. **Login to Zendesk**
+   ```bash
+   zcli login
+   ```
 
-### Self-Hosted Temporal Cluster
+3. **Navigate to the Zendesk App Directory**
+   ```bash
+   cd zendesk_app
+   ```
 
-For self-hosted options, refer to the [Temporal documentation](https://docs.temporal.io/clusters/server-options).
+4. **Start the Local App Server**
+   ```bash
+   zcli apps:server
+   ```
+
+5. **Test the App in Zendesk**
+   - Go to your Zendesk Support instance in your browser
+   - Append `?zcli_apps=true` to the URL
+   - The locally running app will now appear in the sidebar
+
+This setup allows you to develop and test changes to the Zendesk app without having to constantly repackage and upload it to your Zendesk instance.
+
+</details>
 
 ## Contributing
 
