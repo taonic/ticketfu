@@ -318,19 +318,19 @@ TicketFu includes a Zendesk app that can be installed in your Zendesk Support in
 1. **Package the App**
    ```bash
    cd zendesk_app
-   zip -r ticketfu.zip *
+   npm run build
+   cd dist && zip -r ticketfu.zip *
    ```
 
 2. **Upload to Zendesk**
    - In Zendesk, go to **Admin Center** > **Apps and integrations** > **Manage**
    - Click **Upload private app**
    - Upload the `ticketfu.zip` file
-   - Complete the app information form
 
 3. **Configure the App**
    When prompted, enter the following settings:
-   - **API Token**: Your TicketFu server API token
-   - **Server URL**: The URL where your TicketFu server is deployed (e.g., `https://ticketfu.onrender.com`)
+   - **API Token**: Your TicketFu server API token. (Copy from SERVER_API_TOKEN when using Render)
+   - **Server URL**: The URL where your TicketFu server is deployed (e.g., `https://ticketfu-abc123.onrender.com`)
 
 4. **Install the App**
    - Click **Install**
