@@ -3,7 +3,7 @@
 [![Go Tests](https://github.com/taonic/ticketfu/workflows/Go%20Tests/badge.svg)](https://github.com/taonic/ticketfu/actions)
 [![codecov](https://codecov.io/gh/taonic/ticketfu/branch/main/graph/badge.svg)](https://codecov.io/gh/taonic/ticketfu)
 
-TicketFu is an AI-powered support ticket analysis system that integrates with Zendesk to provide enhanced ticket management capabilities. It uses modern LLMs (OpenAI, Google Gemini, or Anthropic) to generate ticket summaries and organization-level insights, making it easier for support teams to manage customer issues efficiently.
+TicketFu is an AI-powered support ticket analysis system that integrates with Zendesk to provide enhanced ticket management capabilities. Built on Temporal for reliable, durable workflow execution, it uses modern LLMs (OpenAI, Google Gemini, or Anthropic) to generate ticket summaries and organization-level insights, making it easier for support teams to manage customer issues efficiently while ensuring fault-tolerance and scalability.
 
 ## Features
 
@@ -67,27 +67,65 @@ After deploying TicketFu on Render, follow these steps to install the Zendesk ap
    - Click on "Environment" in the left menu
    - Find and copy the auto-generated `SERVER_API_TOKEN` value
 
-2. **Package the Zendesk App**
+2. **Package the App**
    ```bash
    cd zendesk_app
-   zip -r ticketfu.zip *
+   npm run build
+   cd dist && zip -r ticketfu.zip *
    ```
 
 3. **Upload to Zendesk**
    - In Zendesk, go to **Admin Center** > **Apps and integrations** > **Manage**
    - Click **Upload private app**
    - Upload the `ticketfu.zip` file
-   - Complete the app information form
 
 4. **Configure the App**
    When prompted, enter the following settings:
-   - **API Token**: Paste the `SERVER_API_TOKEN` value you copied from Render
-   - **Server URL**: The URL of your Render deployment (e.g., `https://ticketfu-abc123.onrender.com`)
+   - **API Token**: Your TicketFu server API token. (Copy from SERVER_API_TOKEN when using Render)
+   - **Server URL**: The URL where your TicketFu server is deployed (e.g., `https://ticketfu-abc123.onrender.com`)
 
 5. **Install the App**
    - Click **Install**
 
 The app will now appear in your Zendesk Support interface when viewing tickets and organizations.
+
+#### Configuring Zendesk Webhooks and Triggers
+
+To automate ticket analysis whenever a new ticket is created or updated, you'll need to set up Zendesk triggers with webhooks:
+
+1. **Create a Webhook Target**:
+   - In Zendesk, go to **Admin Center** > **Objects and rules** > **Webhooks**
+   - Click **Create webhook**
+   - Set the following:
+     - **Name**: TicketFu Ticket Update
+     - **Endpoint URL**: `https://<e.g. https://ticketfu-abc123.onrender.com>/api/v1/ticket`
+     - **Request method**: POST
+     - **Request format**: JSON
+   - Add the following HTTP headers:
+     - Header name: X-Ticketfu-Key
+     - Value: YOUR_SERVER_API_TOKEN`
+   - Click **Create webhook**
+
+2. **Create a Trigger**:
+   - Go to **Admin Center** > **Objects and rules** > **Triggers**
+   - Click **Create trigger**
+   - Configure basic information:
+     - **Title**: TicketFu Analysis
+     - **Category**: Notifications
+   - Set the conditions:
+     - Meet any of these conditions:
+       - Ticket: Is Created
+       - Ticket: Comment Text Changed
+       - Ticket: Priority Changed
+   - Set the actions:
+     - **Notify webhook**: Select the webhook you created
+     - **JSON body**:
+       ```json
+       {
+         "ticket_url": "{{ticket.url}}"
+       }
+       ```
+   - Click **Create trigger**
 
 ### Local Deployment
 
@@ -188,28 +226,28 @@ TicketFu is built with a modular architecture that consists of two main componen
 
 ```mermaid
 graph TB
+    subgraph "Temporal Worker"
+        TicketWorkflow[Ticket Workflow]
+        OrgWorkflow[Organization Workflow]
+    end
+
     subgraph "Zendesk"
         ZendeskWebhooks[Zendesk Webhooks]
         ZendeskApp[Zendesk App]
         ZendeskAPI[Zendesk API]
     end
-
-    subgraph "Temporal Worker"
-        TicketWorkflow[Ticket Workflow]
-        OrgWorkflow[Organization Workflow]
-    end
     
-    LLM[LLM API\nOpenAI/Google AI/Anthropic]
+    LLM["LLM API: ChatGPT, Gemini or Claude"]
     TemporalCloud[Temporal Cloud]
     
     %% Flow with numbered sequence
-    ZendeskWebhooks -->|1 Trigger workflow| TicketWorkflow
-    TicketWorkflow -->|2 Fetch data| ZendeskAPI
-    TicketWorkflow -->|3 Generate summaries| LLM
-    TicketWorkflow -->|4 Update org data| OrgWorkflow
-    OrgWorkflow -->|5 Generate insights| LLM
-    ZendeskApp -->|6 Display summaries| TicketWorkflow
-    ZendeskApp -->|7 Display insights| OrgWorkflow
+    ZendeskWebhooks -->|"(1) Trigger workflow"| TicketWorkflow
+    TicketWorkflow -->|"(2) Fetch data"| ZendeskAPI
+    TicketWorkflow -->|"(3) Generate summaries"| LLM
+    TicketWorkflow -->|"(4) Update org data (Workflow Signal)"| OrgWorkflow
+    OrgWorkflow -->|"(5) Generate insights"| LLM
+    ZendeskApp -->|"(6) Fetch summary (Workflow Query)"| TicketWorkflow
+    ZendeskApp -->|"(7) Fetch summary (Workflow Query)"| OrgWorkflow
     
     %% Temporal orchestration
     TemporalCloud -.->|Orchestrate| TicketWorkflow
@@ -308,34 +346,6 @@ TicketFu exposes the following RESTful API endpoints:
 - `GET /api/v1/organization/{orgId}/summary`: Get organization-level insights and analysis
 
 All API requests require the `X-Ticketfu-Key` header with your SERVER_API_TOKEN value. When you install the Zendesk app, you'll configure it to use this same token to authenticate requests to your TicketFu server.
-
-## Zendesk App Integration
-
-TicketFu includes a Zendesk app that can be installed in your Zendesk Support instance to display ticket summaries and organization insights directly in the Zendesk interface. The app appears in both the ticket sidebar and organization sidebar.
-
-### Installing the Zendesk App
-
-1. **Package the App**
-   ```bash
-   cd zendesk_app
-   npm run build
-   cd dist && zip -r ticketfu.zip *
-   ```
-
-2. **Upload to Zendesk**
-   - In Zendesk, go to **Admin Center** > **Apps and integrations** > **Manage**
-   - Click **Upload private app**
-   - Upload the `ticketfu.zip` file
-
-3. **Configure the App**
-   When prompted, enter the following settings:
-   - **API Token**: Your TicketFu server API token. (Copy from SERVER_API_TOKEN when using Render)
-   - **Server URL**: The URL where your TicketFu server is deployed (e.g., `https://ticketfu-abc123.onrender.com`)
-
-4. **Install the App**
-   - Click **Install**
-
-The app will now appear in your Zendesk Support interface when viewing tickets and organizations.
 
 ## Development
 
