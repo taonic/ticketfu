@@ -1,6 +1,6 @@
 async function renderOrgSummary(orgId) {
-  const settings = await client.metadata();
-  const summary = await getOrgSummary(settings.server_url, orgId);
+  const metadata = await client.metadata();
+  const summary = await getOrgSummary(metadata.settings.server_url, orgId);
   return `
     <h2 class="u-semibold u-fs-l">Key insights</h2>
     <p style="margin-bottom: 10px">${summary.key_insights}</p>
@@ -29,15 +29,12 @@ async function renderOrgSummary(orgId) {
 
 async function getOrgSummary(server_url, orgId) {
   const options = {
-    url: `${server_url}/api/v1/organization/summary`,
+    url: `${server_url}/api/v1/organization/${orgId}/summary`,
     type: "GET",
     contentType: "application/json",
     headers: {
       "X-Ticketfu-Key": "{{setting.api_token}}",
     },
-    data: JSON.stringify({
-      organization_id: `${orgId}`
-    }),
     secure: true,
   };
 

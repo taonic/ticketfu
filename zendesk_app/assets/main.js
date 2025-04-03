@@ -4,18 +4,18 @@ async function renderSummary() {
   const subdomain = await client.get('currentAccount.subdomain');
   const organization = await client.get('ticket.organization')
   const ticketId = await client.get('ticket.id');
-  const settings = await client.metadata();
+  const metadata = await client.metadata();
   var summary;
   try {
-    summary = await getSummary(settings.server_url, subdomain['currentAccount.subdomain'], ticketId['ticket.id']);
+    summary = await getSummary(metadata.settings.server_url, subdomain['currentAccount.subdomain'], ticketId['ticket.id']);
   } catch (error) {
     if (error.status === 404) {
       console.warn(`Summary not found for the ticket: ${ticketId} error: ${error}`);
       // trigger summarize generation then try getting summary again
-      await updateTicket(settings.server_url, subdomain['currentAccount.subdomain'], ticketId['ticket.id']);
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await updateTicket(metadata.settings.server_url, subdomain['currentAccount.subdomain'], ticketId['ticket.id']);
+      await new Promise(resolve => setTimeout(resolve, 5000));
       // todo: error handling
-      summary = await getSummary(settings.server_url, subdomain['currentAccount.subdomain'], ticketId['ticket.id']);
+      summary = await getSummary(metadata.settings.server_url, subdomain['currentAccount.subdomain'], ticketId['ticket.id']);
     } else {
       console.error('Error fetching summary:', error);
       throw error;
@@ -25,7 +25,7 @@ async function renderSummary() {
   if (summary.startsWith("```json")) {
     const cleanedString = summary.replace(/```json\n/, '').replace(/\n```/, '');
     const jsonObject = JSON.parse(cleanedString);
-    const orgSummary = await renderOrgSummary(organization['ticket.organization']['id'])
+    const orgSummary = organization['ticket.organization'] ? await renderOrgSummary(organization['ticket.organization']['id']) : ""
     container.innerHTML = `
       <div class="c-tab__list" role="tablist">
         <button
@@ -66,15 +66,12 @@ async function renderSummary() {
 
 async function getSummary(server_url, subdomain, ticketId) {
   const options = {
-    url: `${server_url}/api/v1/ticket/summary`,
+    url: `${server_url}/api/v1/ticket/${ticketId}/summary`,
     type: "GET",
     contentType: "application/json",
     headers: {
       "X-Ticketfu-Key": "{{setting.api_token}}",
     },
-    data: JSON.stringify({
-      ticket_url: `${subdomain}.zendesk.com/agent/tickets/${ticketId}`
-    }),
     secure: true,
   };
   const response = await client.request(options);

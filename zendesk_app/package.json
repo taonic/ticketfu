@@ -1,0 +1,31 @@
+{
+  "name": "ticketfu-zendesk-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --mode production",
+    "clean": "rm -rf dist",
+    "server": "zcli apps:server"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.5",
+    "@babel/preset-env": "^7.22.5",
+    "autoprefixer": "^10.4.14",
+    "babel-loader": "^9.1.2",
+    "copy-webpack-plugin": "^11.0.0",
+    "@zendeskgarden/tailwindcss": "^4.0.2",
+    "css-loader": "^6.8.1",
+    "html-webpack-plugin": "^5.5.3",
+    "postcss": "^8.4.24",
+    "postcss-loader": "^7.3.3",
+    "style-loader": "^3.3.3",
+    "tailwindcss": "^3.3.2",
+    "vue-loader": "^17.2.2",
+    "webpack": "^5.86.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
