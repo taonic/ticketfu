@@ -14,6 +14,16 @@ Built on Temporal for reliable, durable workflow execution, it uses modern LLMs 
 - **Reliable Workflow Processing**: Uses Temporal for durable, reliable background processing
 - **Multiple LLM Support**: Compatible with OpenAI, Google Gemini, and Anthropic models
 
+## Why Temporal?
+
+Temporal's durable execution is helpful for:
+
+- Store entity state (tickets, organizations) without a database
+- Cache expensive API call results (like LLM summaries)
+- Resilience against transient service disruptions
+- Built-in visibility into workflow status and history
+- Code reads like synchronous execution but is fully durable
+
 ## Cloud Deployment
 
 ### One-Click Deployment on Render
