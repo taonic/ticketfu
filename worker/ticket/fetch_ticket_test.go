@@ -81,9 +81,9 @@ func TestActivity_FetchTicket_Success(t *testing.T) {
 
 	// Set up mock expectations
 	mockZClient.On("GetTicket", ctx, parsedID).Return(testTicket, nil)
-	mockZClient.On("GetUser", ctx, int64(101)).Return(testRequester, nil)
-	mockZClient.On("GetUser", ctx, int64(102)).Return(testAssignee, nil)
-	mockZClient.On("GetOrganization", ctx, int64(201)).Return(testOrg, nil)
+	mockZClient.On("GetUser", mock.Anything, int64(101)).Return(testRequester, nil)
+	mockZClient.On("GetUser", mock.Anything, int64(102)).Return(testAssignee, nil)
+	mockZClient.On("GetOrganization", mock.Anything, int64(201)).Return(testOrg, nil)
 
 	// Execute
 	input := FetchTicketInput{ID: ticketID}
@@ -180,7 +180,13 @@ func TestActivity_FetchTicket_GetUserError(t *testing.T) {
 
 	// Setup mocks
 	mockZClient.On("GetTicket", ctx, parsedID).Return(testTicket, nil)
-	mockZClient.On("GetUser", ctx, int64(101)).Return(zendesk.User{}, errors.New("requester not found"))
+	mockZClient.On("GetUser", mock.Anything, int64(101)).Return(zendesk.User{}, errors.New("requester not found"))
+
+	// For this test we don't expect the assignee or organization to be called,
+	// since the requester call should fail first, but with errgroup we can't guarantee order
+	// So we need to set up the expectations anyway, as they might be called before the error is returned
+	mockZClient.On("GetUser", mock.Anything, int64(102)).Return(zendesk.User{}, nil).Maybe()
+	mockZClient.On("GetOrganization", mock.Anything, int64(201)).Return(zendesk.Organization{}, nil).Maybe()
 
 	// Execute
 	input := FetchTicketInput{ID: ticketID}
@@ -228,9 +234,9 @@ func TestActivity_FetchTicket_GetOrganizationError(t *testing.T) {
 
 	// Setup mocks
 	mockZClient.On("GetTicket", ctx, parsedID).Return(testTicket, nil)
-	mockZClient.On("GetUser", ctx, int64(101)).Return(testRequester, nil)
-	mockZClient.On("GetUser", ctx, int64(102)).Return(testAssignee, nil)
-	mockZClient.On("GetOrganization", ctx, int64(201)).Return(zendesk.Organization{}, errors.New("org not found"))
+	mockZClient.On("GetUser", mock.Anything, int64(101)).Return(testRequester, nil)
+	mockZClient.On("GetUser", mock.Anything, int64(102)).Return(testAssignee, nil)
+	mockZClient.On("GetOrganization", mock.Anything, int64(201)).Return(zendesk.Organization{}, errors.New("org not found"))
 
 	// Execute
 	input := FetchTicketInput{ID: ticketID}
