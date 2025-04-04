@@ -71,7 +71,9 @@ After deploying TicketFu on Render, follow these steps to install the Zendesk ap
    - Click on "Environment" in the left menu
    - Find and copy the auto-generated `SERVER_API_TOKEN` value
 
-2. **Package the App**
+2. **Download the Zendesk app from [here](https://github.com/taonic/ticketfu/raw/refs/heads/main/zendesk_app/ticketfu.zip)**
+
+2. **Or Package the App locally**
    ```bash
    cd zendesk_app
    npm run build
@@ -105,10 +107,11 @@ To automate ticket analysis whenever a new ticket is created or updated, you'll 
      - **Endpoint URL**: `https://<e.g. https://ticketfu-abc123.onrender.com>/api/v1/ticket`
      - **Request method**: POST
      - **Request format**: JSON
+   - Choose None for Authentication
    - Add the following HTTP headers:
      - Header name: X-Ticketfu-Key
-     - Value: YOUR_SERVER_API_TOKEN`
-   - Click **Create webhook**
+     - Value: <SERVER_API_TOKEN> (You can find it from Render's Environment tab)
+   - Follow the "Admin Center" link from "Select a trigger or automation in Admin Center"
 
 2. **Create a Trigger**:
    - Go to **Admin Center** > **Objects and rules** > **Triggers**
@@ -118,18 +121,17 @@ To automate ticket analysis whenever a new ticket is created or updated, you'll 
      - **Category**: Notifications
    - Set the conditions:
      - Meet any of these conditions:
-       - Ticket: Is Created
-       - Ticket: Comment Text Changed
-       - Ticket: Priority Changed
+       - Ticket: Is Updated
    - Set the actions:
-     - **Notify webhook**: Select the webhook you created
-     - **JSON body**:
+     - **Notify by**: Select Active webhook, then find the newly created "TicketFu Ticket Update" webhook.
+     - **Add below JSON body**:
        ```json
        {
          "ticket_url": "{{ticket.url}}"
        }
        ```
    - Click **Create trigger**
+   - Finalize the Webhook creation in the previous tab
 
 </details>
 
