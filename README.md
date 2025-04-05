@@ -5,7 +5,7 @@
 
 TicketFu is an AI-powered support ticket analysis system that integrates with Zendesk to provide enhanced ticket management capabilities.
 
-Built on Temporal for reliable, durable workflow execution, it uses modern LLMs (OpenAI, Google Gemini, or Anthropic) to generate ticket summaries and organization-level insights, making it easier for support teams to manage customer issues efficiently while ensuring fault-tolerance and scalability.
+Built on Temporal for reliable, durable workflow execution, it uses modern LLMs (OpenAI, Google Gemini, or Anthropic) to generate ticket summaries and organization-level insights, making it easier for support teams to manage customer issues efficiently.
 
 ## Features
 

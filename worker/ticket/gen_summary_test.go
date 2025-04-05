@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/taonic/ticketfu/config"
+	"go.temporal.io/sdk/testsuite"
 )
 
 // MockGenAIAPI mocks the gemini.API
@@ -46,6 +47,9 @@ func createTestTicket() Ticket {
 }
 
 func TestActivity_GenSummary(t *testing.T) {
+	testSuite := testsuite.WorkflowTestSuite{}
+	testEnv := testSuite.NewTestActivityEnvironment()
+
 	// Define test cases
 	testCases := []struct {
 		name           string
@@ -112,26 +116,25 @@ func TestActivity_GenSummary(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Setup
-			ctx := context.Background()
 			mockAPI := new(MockGenAIAPI)
 			tc.setupMock(mockAPI)
 
-			activity := &Activity{
-				genAPI: mockAPI,
-			}
+			activity := &Activity{genAPI: mockAPI}
+			testEnv.RegisterActivity(activity.GenTicketSummary)
 
 			// Execute
 			input := GenSummaryInput{Ticket: tc.ticket}
-			output, err := activity.GenTicketSummary(ctx, input)
+			future, err := testEnv.ExecuteActivity(activity.GenTicketSummary, input)
 
 			// Verify
 			if tc.expectedError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tc.expectedError)
-				assert.Nil(t, output)
 			} else {
 				require.NoError(t, err)
-				require.NotNil(t, output)
+				var output GenSummaryOutput
+				err := future.Get(&output)
+				require.NoError(t, err)
 				assert.Equal(t, tc.expectedOutput, output.Summary)
 			}
 

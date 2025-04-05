@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"go.temporal.io/sdk/testsuite"
 )
 
 // MockZendeskClient implements the zendesk.Client interface needed for this test
@@ -38,6 +39,9 @@ func (m *MockZendeskClient) GetOrganization(ctx context.Context, orgID int64) (z
 }
 
 func TestActivity_FetchOrganization(t *testing.T) {
+	testSuite := testsuite.WorkflowTestSuite{}
+	testEnv := testSuite.NewTestActivityEnvironment()
+
 	// Define test cases
 	testCases := []struct {
 		name          string
@@ -91,7 +95,6 @@ func TestActivity_FetchOrganization(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Setup
-			ctx := context.Background()
 			mockClient := new(MockZendeskClient)
 			tc.setupMock(mockClient)
 
@@ -99,18 +102,24 @@ func TestActivity_FetchOrganization(t *testing.T) {
 				zClient: mockClient,
 			}
 
-			// Execute
+			// Register the activity with the test environment
+			testEnv.RegisterActivity(activity.FetchOrganization)
+
+			// Execute the activity
 			input := FetchOrganizationInput{ID: tc.orgID}
-			output, err := activity.FetchOrganization(ctx, input)
+			future, err := testEnv.ExecuteActivity(activity.FetchOrganization, input)
 
 			// Verify
 			if tc.expectedError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tc.expectedError)
-				assert.Nil(t, output)
 			} else {
 				require.NoError(t, err)
-				require.NotNil(t, output)
+
+				var output FetchOrganizationOutput
+				err := future.Get(&output)
+				require.NoError(t, err)
+
 				assert.Equal(t, tc.expected.Organization.ID, output.Organization.ID)
 				assert.Equal(t, tc.expected.Organization.Name, output.Organization.Name)
 				assert.Equal(t, tc.expected.Organization.Details, output.Organization.Details)

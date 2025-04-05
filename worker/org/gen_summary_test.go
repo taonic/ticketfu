@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/taonic/ticketfu/config"
+	"go.temporal.io/sdk/testsuite"
 )
 
 // MockGeminiAPI mocks the gemini.API interface
@@ -42,6 +43,9 @@ func createTestOrganization() Organization {
 }
 
 func TestActivity_GenOrgSummary(t *testing.T) {
+	testSuite := testsuite.WorkflowTestSuite{}
+	testEnv := testSuite.NewTestActivityEnvironment()
+
 	// Define test cases
 	testCases := []struct {
 		name           string
@@ -126,24 +130,29 @@ func TestActivity_GenOrgSummary(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Setup
-			ctx := context.Background()
 			mockAPI := new(MockGeminiAPI)
 			tc.setupMock(mockAPI)
 
 			activity := &Activity{genAPI: mockAPI}
 
+			// Register the activity with the test environment
+			testEnv.RegisterActivity(activity.GenOrgSummary)
+
 			// Execute
 			input := GenSummaryInput{Organization: tc.organization}
-			output, err := activity.GenOrgSummary(ctx, input)
+			future, err := testEnv.ExecuteActivity(activity.GenOrgSummary, input)
 
 			// Verify
 			if tc.expectedError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tc.expectedError)
-				assert.Nil(t, output)
 			} else {
 				require.NoError(t, err)
-				require.NotNil(t, output)
+
+				var output GenSummaryOutput
+				err := future.Get(&output)
+				require.NoError(t, err)
+
 				assert.Equal(t, tc.expectedOutput, output.Summary)
 			}
 
