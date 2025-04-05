@@ -23,7 +23,7 @@ func (h *HTTPServer) handleGetTicket(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ticketID := vars["ticketId"]
 
-	h.logger.Debug("Received get ticket", tag.Value(ticketID))
+	h.logger.Debug("Handling GET ticket", tag.Value(ticketID))
 
 	workflowID := fmt.Sprintf(ticket.TicketWorkflowIDTemplate, ticketID)
 

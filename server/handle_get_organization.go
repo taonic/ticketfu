@@ -27,7 +27,7 @@ func (h *HTTPServer) handleGetOrganization(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	h.logger.Debug("Get organization", tag.Value(organizationId))
+	h.logger.Debug("Handling GET organization", tag.Value(organizationId))
 
 	workflowID := fmt.Sprintf(org.OrganizationWorkflowIDTemplate, organizationId)
 

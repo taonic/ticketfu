@@ -23,17 +23,10 @@ func (h *HTTPServer) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 		TemporalOK: true,
 	}
 
-	// Check Temporal service health
-	if h.temporalClient != nil {
-		if _, err := h.temporalClient.CheckHealth(ctx, nil); err != nil {
-			response.Status = "Degraded"
-			response.TemporalOK = false
-			response.TemporalMsg = err.Error()
-		}
-	} else {
+	if _, err := h.temporalClient.CheckHealth(ctx, nil); err != nil {
 		response.Status = "Degraded"
 		response.TemporalOK = false
-		response.TemporalMsg = "Temporal client not initialized"
+		response.TemporalMsg = err.Error()
 	}
 
 	// Return JSON response

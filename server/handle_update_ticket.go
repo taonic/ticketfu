@@ -37,7 +37,7 @@ func (h *HTTPServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	h.logger.Debug("Received ticket update", tag.Value(ticketID))
+	h.logger.Debug("Handling ticket update", tag.Value(ticketID))
 
 	// Create a unique workflow ID
 	workflowID := fmt.Sprintf(ticket.TicketWorkflowIDTemplate, ticketID)
