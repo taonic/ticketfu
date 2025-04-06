@@ -112,7 +112,9 @@ func (s *organizationWorkflow) run() error {
 		selector.Select(s)
 
 		if pendingUpsert != nil {
-			s.processPendingUpsert(pendingUpsert)
+			if err := s.processPendingUpsert(pendingUpsert); err != nil {
+				return err
+			}
 			pendingUpsert = nil
 			updateCount++
 		}
@@ -125,14 +127,17 @@ func (s *organizationWorkflow) run() error {
 	return workflow.NewContinueAsNewError(s, OrganizationWorkflow, s.organization)
 }
 
-func (s *organizationWorkflow) processPendingUpsert(pendingUpsert *UpsertOrganizationInput) {
+func (s *organizationWorkflow) processPendingUpsert(pendingUpsert *UpsertOrganizationInput) error {
 	// fetch organization if it hasn't been fetched
 	if s.organization.Name == "" {
 		fetchOrganizationInput := FetchOrganizationInput{ID: pendingUpsert.OrganizationID}
 		fetchOrganizationOutput := FetchOrganizationOutput{}
 
-		workflow.ExecuteActivity(s.Context, s.activity.FetchOrganization, fetchOrganizationInput).
+		err := workflow.ExecuteActivity(s.Context, s.activity.FetchOrganization, fetchOrganizationInput).
 			Get(s.Context, &fetchOrganizationOutput)
+		if err != nil {
+			return err
+		}
 
 		s.organization = fetchOrganizationOutput.Organization
 	}
@@ -160,13 +165,18 @@ func (s *organizationWorkflow) processPendingUpsert(pendingUpsert *UpsertOrganiz
 		genSummaryInput := GenSummaryInput{Organization: s.organization}
 		genSummaryOutput := GenSummaryOutput{}
 
-		workflow.ExecuteActivity(s.Context, s.activity.GenOrgSummary, genSummaryInput).
+		err := workflow.ExecuteActivity(s.Context, s.activity.GenOrgSummary, genSummaryInput).
 			Get(s.Context, &genSummaryOutput)
+		if err != nil {
+			return err
+		}
 
 		if genSummaryOutput.Summary != "" {
 			s.organization.Summary = genSummaryOutput.Summary
 		}
 	}
+
+	return nil
 }
 
 func (s *organizationWorkflow) handleQuerySummary() (QueryOrganizationOutput, error) {

@@ -104,7 +104,9 @@ func (s *ticketWorkflow) run() error {
 		selector.Select(s)
 
 		if pendingUpsert != nil {
-			s.processPendingUpsert(pendingUpsert)
+			if err := s.processPendingUpsert(pendingUpsert); err != nil {
+				return err
+			}
 			pendingUpsert = nil
 			updateCount++
 		}
@@ -117,14 +119,16 @@ func (s *ticketWorkflow) run() error {
 	return workflow.NewContinueAsNewError(s, TicketWorkflow, s.ticket)
 }
 
-func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) {
+func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) error {
 	// fetch ticket if it hasn't been assigned
 	if s.ticket.ID == 0 {
 		fetchTicketInput := FetchTicketInput{ID: pendingUpsert.TicketID}
 		fetchTicketOutput := FetchTicketOutput{}
 
-		workflow.ExecuteActivity(s.Context, s.activity.FetchTicket, fetchTicketInput).
-			Get(s.Context, &fetchTicketOutput)
+		if err := workflow.ExecuteActivity(s.Context, s.activity.FetchTicket, fetchTicketInput).
+			Get(s.Context, &fetchTicketOutput); err != nil {
+			return err
+		}
 
 		s.ticket = fetchTicketOutput.Ticket
 	}
@@ -133,8 +137,10 @@ func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) 
 	fetchCommentsInput := FetchCommentsInput{ID: pendingUpsert.TicketID, Cursor: s.ticket.NextCursor}
 	fetchCommentsOutput := FetchCommentsOutput{}
 
-	workflow.ExecuteActivity(s.Context, s.activity.FetchComments, fetchCommentsInput).
-		Get(s.Context, &fetchCommentsOutput)
+	if err := workflow.ExecuteActivity(s.Context, s.activity.FetchComments, fetchCommentsInput).
+		Get(s.Context, &fetchCommentsOutput); err != nil {
+		return err
+	}
 
 	if len(fetchCommentsOutput.Comments) != 0 {
 		s.ticket.Comments = fetchCommentsOutput.Comments
@@ -145,8 +151,10 @@ func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) 
 	genSummaryInput := GenSummaryInput{Ticket: s.ticket}
 	genSummaryOutput := GenSummaryOutput{}
 
-	workflow.ExecuteActivity(s.Context, s.activity.GenTicketSummary, genSummaryInput).
-		Get(s.Context, &genSummaryOutput)
+	if err := workflow.ExecuteActivity(s.Context, s.activity.GenTicketSummary, genSummaryInput).
+		Get(s.Context, &genSummaryOutput); err != nil {
+		return err
+	}
 
 	if genSummaryOutput.Summary != "" {
 		s.ticket.Summary = genSummaryOutput.Summary
@@ -160,9 +168,13 @@ func (s *ticketWorkflow) processPendingUpsert(pendingUpsert *UpsertTicketInput) 
 			TicketSummary:  s.ticket.Summary,
 		}
 
-		workflow.ExecuteActivity(s.Context, s.activity.SignalOrganization, signalOrganizationInput).
-			Get(s.Context, nil)
+		if err := workflow.ExecuteActivity(s.Context, s.activity.SignalOrganization, signalOrganizationInput).
+			Get(s.Context, nil); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (s *ticketWorkflow) handleQuerySummary() (QueryTicketOutput, error) {
