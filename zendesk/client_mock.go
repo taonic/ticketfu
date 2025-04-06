@@ -1,4 +1,4 @@
-package ticket
+package zendesk
 
 import (
 	"context"
@@ -30,4 +30,25 @@ func (m *MockZendeskClient) GetOrganization(ctx context.Context, id int64) (zend
 func (m *MockZendeskClient) GetTicketCommentsCBP(ctx context.Context, opts *zendesk.CBPOptions) ([]zendesk.TicketComment, zendesk.CursorPaginationMeta, error) {
 	args := m.Called(ctx, opts)
 	return args.Get(0).([]zendesk.TicketComment), args.Get(1).(zendesk.CursorPaginationMeta), args.Error(2)
+}
+
+func (m *MockZendeskClient) CreateWebhook(ctx context.Context, hook *zendesk.Webhook) (*zendesk.Webhook, error) {
+	args := m.Called(ctx, hook)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*zendesk.Webhook), args.Error(1)
+}
+
+func (m *MockZendeskClient) GetWebhook(ctx context.Context, id string) (*zendesk.Webhook, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*zendesk.Webhook), args.Error(1)
+}
+
+func (m *MockZendeskClient) CreateTrigger(ctx context.Context, trigger zendesk.Trigger) (zendesk.Trigger, error) {
+	args := m.Called(ctx, trigger)
+	return args.Get(0).(zendesk.Trigger), args.Error(1)
 }

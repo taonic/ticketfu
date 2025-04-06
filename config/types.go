@@ -25,10 +25,11 @@ type (
 	}
 
 	ServerConfig struct {
-		Temporal TemporalClientConfig
-		Host     string
-		Port     int
-		APIToken string
+		Temporal              TemporalClientConfig
+		Host                  string
+		Port                  int
+		ZendeskWebhookBaseURL string
+		APIToken              string
 	}
 
 	WorkerConfig struct {

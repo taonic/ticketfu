@@ -14,6 +14,9 @@ type Client interface {
 	GetTicketCommentsCBP(ctx context.Context, opts *zendesk.CBPOptions) ([]zendesk.TicketComment, zendesk.CursorPaginationMeta, error)
 	GetUser(ctx context.Context, userID int64) (zendesk.User, error)
 	GetOrganization(ctx context.Context, orgID int64) (zendesk.Organization, error)
+	CreateWebhook(context.Context, *zendesk.Webhook) (*zendesk.Webhook, error)
+	GetWebhook(ctx context.Context, webhookID string) (*zendesk.Webhook, error)
+	CreateTrigger(context.Context, zendesk.Trigger) (zendesk.Trigger, error)
 }
 
 func NewClient(config config.ZendeskConfig) (Client, error) {

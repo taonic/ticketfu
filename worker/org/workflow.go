@@ -3,7 +3,6 @@ package org
 import (
 	"time"
 
-	"github.com/taonic/ticketfu/worker/util"
 	sdklog "go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -48,7 +47,6 @@ type (
 		logger                     sdklog.Logger
 		signalCh                   workflow.ReceiveChannel
 		updatesBeforeContinueAsNew int
-		activityOptions            workflow.ActivityOptions
 		activity                   Activity
 
 		// Organization state
@@ -153,7 +151,7 @@ func (s *organizationWorkflow) processPendingUpsert(pendingUpsert *UpsertOrganiz
 		// Truncate by keeping up to 500 most recent tickets
 		// todo: make it configurable
 		var truncated bool
-		s.organization.TicketSummaries, truncated = util.TruncateStringMap(s.organization.TicketSummaries, MaxTicketSummaries)
+		s.organization.TicketSummaries, truncated = truncateStringMap(s.organization.TicketSummaries, MaxTicketSummaries)
 		if truncated {
 			s.logger.Debug("Truncated ticket summaries to the limit: ", MaxTicketSummaries)
 		}

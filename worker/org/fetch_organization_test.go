@@ -1,7 +1,6 @@
 package org
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -9,34 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	zd "github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/testsuite"
 )
-
-// MockZendeskClient implements the zendesk.Client interface needed for this test
-type MockZendeskClient struct {
-	mock.Mock
-}
-
-// Implement all required methods from the zendesk.Client interface
-func (m *MockZendeskClient) GetTicket(ctx context.Context, id int64) (zendesk.Ticket, error) {
-	args := m.Called(ctx, id)
-	return args.Get(0).(zendesk.Ticket), args.Error(1)
-}
-
-func (m *MockZendeskClient) GetTicketCommentsCBP(ctx context.Context, opts *zendesk.CBPOptions) ([]zendesk.TicketComment, zendesk.CursorPaginationMeta, error) {
-	args := m.Called(ctx, opts)
-	return args.Get(0).([]zendesk.TicketComment), args.Get(1).(zendesk.CursorPaginationMeta), args.Error(2)
-}
-
-func (m *MockZendeskClient) GetUser(ctx context.Context, userID int64) (zendesk.User, error) {
-	args := m.Called(ctx, userID)
-	return args.Get(0).(zendesk.User), args.Error(1)
-}
-
-func (m *MockZendeskClient) GetOrganization(ctx context.Context, orgID int64) (zendesk.Organization, error) {
-	args := m.Called(ctx, orgID)
-	return args.Get(0).(zendesk.Organization), args.Error(1)
-}
 
 func TestActivity_FetchOrganization(t *testing.T) {
 	testSuite := testsuite.WorkflowTestSuite{}
@@ -46,14 +20,14 @@ func TestActivity_FetchOrganization(t *testing.T) {
 	testCases := []struct {
 		name          string
 		orgID         int64
-		setupMock     func(*MockZendeskClient)
+		setupMock     func(*zd.MockZendeskClient)
 		expected      *FetchOrganizationOutput
 		expectedError string
 	}{
 		{
 			name:  "Successful Organization Fetch",
 			orgID: 123,
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				zendeskOrg := zendesk.Organization{
 					ID:      123,
 					Name:    "Test Organization",
@@ -74,7 +48,7 @@ func TestActivity_FetchOrganization(t *testing.T) {
 		{
 			name:  "Zendesk API Error",
 			orgID: 456,
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				m.On("GetOrganization", mock.Anything, int64(456)).Return(zendesk.Organization{}, errors.New("zendesk API error"))
 			},
 			expectedError: "zendesk API error",
@@ -82,7 +56,7 @@ func TestActivity_FetchOrganization(t *testing.T) {
 		{
 			name:  "Organization Not Found",
 			orgID: 789,
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				// Use a simple error since we can't directly create a Zendesk Error type
 				notFoundErr := errors.New("404 Not Found")
 				m.On("GetOrganization", mock.Anything, int64(789)).Return(zendesk.Organization{}, notFoundErr)
@@ -95,7 +69,7 @@ func TestActivity_FetchOrganization(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Setup
-			mockClient := new(MockZendeskClient)
+			mockClient := new(zd.MockZendeskClient)
 			tc.setupMock(mockClient)
 
 			activity := &Activity{

@@ -47,7 +47,6 @@ type (
 		workflow.Context
 		signalCh                   workflow.ReceiveChannel
 		updatesBeforeContinueAsNew int
-		activityOptions            workflow.ActivityOptions
 		activity                   Activity
 
 		// Ticket state

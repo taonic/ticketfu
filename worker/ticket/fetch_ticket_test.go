@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	zd "github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/testsuite"
 )
 
@@ -19,14 +20,14 @@ func TestFetchTicket(t *testing.T) {
 	testCases := []struct {
 		name           string
 		ticketID       string
-		setupMock      func(*MockZendeskClient)
+		setupMock      func(*zd.MockZendeskClient)
 		expectedErr    string
 		expectedTicket *Ticket
 	}{
 		{
 			name:     "Successful Fetch",
 			ticketID: "12345",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				now := time.Now()
 				m.On("GetTicket", mock.Anything, int64(12345)).Return(zendesk.Ticket{
 					ID:             12345,
@@ -69,7 +70,7 @@ func TestFetchTicket(t *testing.T) {
 		{
 			name:     "Invalid ID",
 			ticketID: "not-a-number",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				// No mock setup needed as it will fail parsing the ID
 			},
 			expectedErr: "strconv.ParseInt",
@@ -77,7 +78,7 @@ func TestFetchTicket(t *testing.T) {
 		{
 			name:     "Ticket API Error",
 			ticketID: "12345",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				m.On("GetTicket", mock.Anything, int64(12345)).Return(zendesk.Ticket{}, errors.New("ticket API error"))
 			},
 			expectedErr: "ticket API error",
@@ -85,7 +86,7 @@ func TestFetchTicket(t *testing.T) {
 		{
 			name:     "Requester API Error",
 			ticketID: "12345",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				now := time.Now()
 				m.On("GetTicket", mock.Anything, int64(12345)).Return(zendesk.Ticket{
 					ID:             12345,
@@ -104,7 +105,7 @@ func TestFetchTicket(t *testing.T) {
 		{
 			name:     "Organization API Error",
 			ticketID: "12345",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				now := time.Now()
 				m.On("GetTicket", mock.Anything, int64(12345)).Return(zendesk.Ticket{
 					ID:             12345,
@@ -129,7 +130,7 @@ func TestFetchTicket(t *testing.T) {
 		{
 			name:     "Ticket with No Organization",
 			ticketID: "12345",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				now := time.Now()
 				// Setup mock ticket response with no organization
 				m.On("GetTicket", mock.Anything, int64(12345)).Return(zendesk.Ticket{
@@ -175,7 +176,7 @@ func TestFetchTicket(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create and setup mock client
-			mockZClient := new(MockZendeskClient)
+			mockZClient := new(zd.MockZendeskClient)
 			tc.setupMock(mockZClient)
 
 			// Create activity instance

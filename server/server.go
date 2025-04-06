@@ -31,6 +31,9 @@ func NewServer(config config.ServerConfig, httpServer *HTTPServer, temporalClien
 func (s *Server) OnStart(ctx context.Context) error {
 	s.logger.Info("Starting server")
 
+	// Try to create Zendesk webhook on each server start.
+	s.BootstrapZendeskWebhook(ctx)
+
 	if err := s.httpServer.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start HTTP server: %w", err)
 	}

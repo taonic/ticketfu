@@ -8,6 +8,7 @@ import (
 	"github.com/taonic/ticketfu/temporal"
 	"github.com/taonic/ticketfu/worker/org"
 	"github.com/taonic/ticketfu/worker/ticket"
+	"github.com/taonic/ticketfu/worker/webhook"
 	"github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -26,17 +27,24 @@ type Worker struct {
 	config               config.WorkerConfig
 	ticketActivity       *ticket.Activity
 	organizationActivity *org.Activity
+	webhookActivities    *webhook.Activity
 	tClient              client.Client
 }
 
 func NewWorker(
 	config config.WorkerConfig,
 	logger log.Logger,
+	webhookActivity *webhook.Activity,
 	ticketActivity *ticket.Activity,
 	organizationActivity *org.Activity,
 	tClient client.Client,
 ) *Worker {
 	worker := worker.New(tClient, TaskQueue, worker.Options{})
+
+	// register webhook workflow and activities
+	worker.RegisterWorkflow(webhook.WebhookWorkflow)
+	worker.RegisterActivity(webhookActivity.CreateWebhook)
+	worker.RegisterActivity(webhookActivity.CreateTrigger)
 
 	// register ticket workflow and activities
 	worker.RegisterWorkflow(ticket.TicketWorkflow)
@@ -83,6 +91,7 @@ var Module = fx.Options(
 	fx.Provide(temporal.NewClient),
 	fx.Provide(zendesk.NewClient),
 	fx.Provide(genai.NewAPI),
+	fx.Provide(webhook.NewActivity),
 	fx.Provide(ticket.NewActivity),
 	fx.Provide(org.NewActivity),
 	fx.Invoke(func(lc fx.Lifecycle, worker *Worker) {

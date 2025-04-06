@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	zd "github.com/taonic/ticketfu/zendesk"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/testsuite"
 )
@@ -21,7 +22,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 		name           string
 		ticketID       string
 		cursor         string
-		setupMock      func(*MockZendeskClient)
+		setupMock      func(*zd.MockZendeskClient)
 		expectedOutput *FetchCommentsOutput
 		expectError    bool
 		errorType      string
@@ -30,7 +31,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 			name:     "Successful Single Page",
 			ticketID: "12345",
 			cursor:   "",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				// Set up the mock to return a single page of comments
 				comments := []zendesk.TicketComment{
 					{PlainBody: "First comment"},
@@ -53,7 +54,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 			name:     "Multiple Pages",
 			ticketID: "12345",
 			cursor:   "",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				// Set up the mock to return two pages of comments
 				comments1 := []zendesk.TicketComment{
 					{PlainBody: "Page 1 comment 1"},
@@ -91,7 +92,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 			name:     "Invalid Ticket ID",
 			ticketID: "not-a-number",
 			cursor:   "",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				// No mock setup needed, it should fail before API call
 			},
 			expectError: true,
@@ -101,7 +102,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 			name:     "API Error",
 			ticketID: "12345",
 			cursor:   "",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				m.On("GetTicketCommentsCBP", mock.Anything, mock.Anything).
 					Return([]zendesk.TicketComment{}, zendesk.CursorPaginationMeta{}, errors.New("API error")).Once()
 			},
@@ -112,7 +113,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 			name:     "NotFound Error",
 			ticketID: "99999",
 			cursor:   "",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				// Create a proper zendesk.Error using NewError
 				notFoundErr := zendesk.NewError(nil, &http.Response{StatusCode: 404})
 				m.On("GetTicketCommentsCBP", mock.Anything, mock.Anything).
@@ -125,7 +126,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 			name:     "With Initial Cursor",
 			ticketID: "12345",
 			cursor:   "initial-cursor",
-			setupMock: func(m *MockZendeskClient) {
+			setupMock: func(m *zd.MockZendeskClient) {
 				comments := []zendesk.TicketComment{
 					{PlainBody: "Comment with cursor"},
 				}
@@ -146,7 +147,7 @@ func TestFetchCommentsWithActivityEnvironment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockClient := new(MockZendeskClient)
+			mockClient := new(zd.MockZendeskClient)
 			tc.setupMock(mockClient)
 
 			// Create the activity instance

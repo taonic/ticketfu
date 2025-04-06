@@ -13,9 +13,10 @@ import (
 
 const (
 	// Server-specific flags
-	FlagServerHost     = "host"
-	FlagServerPort     = "port"
-	FlagServerAPIToken = "server-api-token"
+	FlagServerHost            = "host"
+	FlagServerPort            = "port"
+	FlagServerAPIToken        = "server-api-token"
+	FlagZendeskWebhookBaseURL = "zendesk-webhook-base-url"
 )
 
 // Server-specific flags
@@ -31,6 +32,11 @@ var serverFlags = append(append([]cli.Flag{
 		EnvVars: []string{"PORT"},
 		Usage:   "server port",
 		Value:   8080,
+	},
+	&cli.StringFlag{
+		Name:    FlagZendeskWebhookBaseURL,
+		EnvVars: []string{"ZENDESK_WEBHOOK_BASE_URL"},
+		Usage:   "if configured server start will create a Zendesk webhook with the target based on the configured base URL",
 	},
 	&cli.StringFlag{
 		Name:     FlagServerAPIToken,
@@ -91,9 +97,10 @@ func NewServerApp(ctx *cli.Context) (*fx.App, error) {
 	fxEventLogger := func() fxevent.Logger { return &fxevent.ZapLogger{Logger: zapLogger} }
 
 	serverConfig := config.ServerConfig{
-		Host:     ctx.String(FlagServerHost),
-		Port:     ctx.Int(FlagServerPort),
-		APIToken: ctx.String(FlagServerAPIToken),
+		Host:                  ctx.String(FlagServerHost),
+		Port:                  ctx.Int(FlagServerPort),
+		ZendeskWebhookBaseURL: ctx.String(FlagZendeskWebhookBaseURL),
+		APIToken:              ctx.String(FlagServerAPIToken),
 	}
 
 	temporalClientConfig := config.TemporalClientConfig{

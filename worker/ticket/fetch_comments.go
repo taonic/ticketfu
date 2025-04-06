@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	gozendesk "github.com/nukosuke/go-zendesk/zendesk"
-	"github.com/taonic/ticketfu/worker/util"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
 )
@@ -71,7 +70,7 @@ func (a *Activity) FetchComments(ctx context.Context, input FetchCommentsInput) 
 
 	// Keep the total byte size of the comments at 100KiB to reduce context window
 	// todo: make it configurable
-	truncatedComments, truncated := util.TruncateStringSlice(comments, MaxCommentsBytes)
+	truncatedComments, truncated := truncateStringSlice(comments, MaxCommentsBytes)
 	if truncated {
 		logger.Debug("Truncated ticket summaries to the limit: ", MaxCommentsBytes)
 	}
