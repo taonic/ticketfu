@@ -18,8 +18,9 @@ Built on Temporal for reliable, durable workflow execution, it uses modern LLMs 
 
 Temporal's durable execution is helpful for:
 
-- Store entity state (tickets, organizations) without a database
-- Cache expensive API call results (like LLM summaries)
+- Storing entity state (tickets, organizations) without a database
+- Idempotent provisioning of Zendesk webhooks and triggers
+- Caching expensive API call results (like LLM summaries)
 - Resilience against transient service disruptions
 - Built-in visibility into workflow status and history
 - Code reads like synchronous execution but is fully durable
@@ -112,7 +113,33 @@ The app will now appear in your Zendesk Support interface when viewing tickets a
 
 #### Configuring Zendesk Webhooks and Triggers
 
-To automate ticket analysis whenever a new ticket is created or updated, you'll need to set up Zendesk triggers with webhooks:
+There are two ways to set up Zendesk webhooks and triggers for TicketFu:
+
+##### Option 1: Use the Auto-Provisioning Workflow (Recommended)
+
+TicketFu includes a built-in workflow that can automatically create the necessary Zendesk webhook and trigger for you:
+
+1. **Configure the Webhook Base URL**:
+   - Set the `ZENDESK_WEBHOOK_BASE_URL` environment variable to your TicketFu server URL (e.g., `https://ticketfu-abc123.onrender.com`)
+   - If using Render, add this variable in your service's Environment tab
+
+2. **Start the Server**:
+   - Updating env var on Render will trigger a server restart, which invokes the webhook workflow
+   - The workflow will:
+     - Create a webhook named "TicketFu Webhook" pointing to your `/api/v1/ticket` endpoint
+     - Configure the webhook with the proper API key authentication
+     - Create a trigger that fires the webhook when tickets are created or updated
+   - This process is idempotent - it will only create resources if they don't already exist
+
+3. **Verify Setup**:
+   - In Zendesk, go to **Admin Center** > **Apps and integrations** > **Webhooks**
+   - You should see "TicketFu Webhook" in the list
+   - Go to **Admin Center** > **Objects and rules** > **Triggers**
+   - You should see "Notify TicketFu" in the list
+
+##### Option 2: Manual Configuration
+
+If you prefer to set up the webhook and trigger manually:
 
 1. **Create a Webhook Target**:
    - In Zendesk, go to **Admin Center** > **Apps and integrations** > **Webhooks**
